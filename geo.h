@@ -1,5 +1,7 @@
-#include <bits/stdc++.h>
+#include <cmath>
 #include <vector>
+#include <iostream>
+using namespace std;
 #define EPS 1e-9
 
 struct point{
@@ -75,10 +77,18 @@ inline double dist(point p, point q){
     return sqrt(sqnorm(p-q));
 }
 
+bool collinear(point p, point q, point r) {
+    return fabs(cross(p-q, p-r)) < EPS;
+}
+
 inline bool ccw(point p, point q, point r){
     return cross(p-q,p-r) > 0;
 }
 
-inline bool ccw(point p, point q, point r, bool ref){
-    return ref ? (cross(p-q,p-r) > -EPS) : (cross(p-q, p-r) < EPS);
-} 
+inline void print(const vector<point> &p){
+    int n = (int)p.size();
+    for(int i = 0; i < n; i++){
+        cout << i+1 << ": " <<  p[i].x << ' ' << p[i].y << '\n';
+    }
+    cout << "\n\n";
+}

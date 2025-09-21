@@ -1,12 +1,13 @@
 #include "geo.h"
-
+#include <bits/stdc++.h>
+#define sz(a) (int)a.size()
 using namespace std;
 
 vector<point> randomPoints(int n){
     vector<point>points;
     for(int i = 0; i < n; i++){
         double xrand = 100 * (double)rand()/(RAND_MAX+1);
-        double yrand = 100* (double)rand()/(RAND_MAX+1);
+        double yrand = 100 * (double)rand()/(RAND_MAX+1);
 
         points.push_back({xrand, yrand});
     }
@@ -18,22 +19,25 @@ inline bool isConvex(vector<point> &p){
     int n = p.size();
     if(n <= 3) return false;  // Se duplica el primer vertice, por lo que n <= 3 es un punto o una linea.
     bool isLeft = ccw(p[0], p[1], p[2]);
+    int dir = 0;
     for(int i = 1; i < n; i++){
-        if(ccw(p[i],p[i+1],p[(i+2) == n ? 1 : i+2], isLeft) != isLeft){
-            return false;
+        if (ccw(p[i],p[i+1],p[(i+2) == n ? 1 : i+2]) != 0) {
+            if (dir == 0) dir = (cross > 0 ? 1 : -1);
+            else if ((cross > 0 ? 1 : -1) != dir) return false;
         }
     }
     return true;
 }
 
 vector<point> jarvisMarch(vector<point> &p){
-    int n = p.size();
+    int n = sz(p);
     if(n<=3) return p;
     vector<point> CH;
     int l = 0;
     for(int i = 1; i < n; i++){
         if(p[i].x < p[l].x || (p[i].x == p[l].x && p[i].y < p[l].y)) l = i;
     }
+
     int pivot = l, k;
     do{
         CH.push_back(p[pivot]);
@@ -48,6 +52,36 @@ vector<point> jarvisMarch(vector<point> &p){
         pivot = k;
     }while(pivot!=l);
 
+    CH.push_back(CH[0]);
+    return CH;
+}
+
+vector<point> grahamScan(vector<point> &p){
+    int n = p.size();
+    if(n<=3) return p;
+    int l = 0;
+    
+    for(int i = 1; i < n; i++){
+        if(p[i].x < p[l].x || (abs((p[i].x - p[l].x)) < EPS && p[i].y < p[l].y)) l = i;
+    }
+
+    swap(p[0], p[l]);
+    point pivot = p[0];
+    sort(++p.begin(), p.end(),[&](point a, point b){
+        return ccw(p[0], a, b);
+    });
+    
+    vector<point> CH({p[n-1],p[0],p[1]});
+    int i = 2;
+    while(i < n){
+        int j = sz(CH)-1;
+        if(ccw(CH[j-1],CH[j],p[i])){
+            CH.push_back(p[i++]);
+        }
+        else{
+            CH.pop_back();
+        }
+    }
     return CH;
 }
 
@@ -56,14 +90,18 @@ int main(void){
     int n;
     cin >> n;
     vector<point> p = randomPoints(n);
-
-    p.push_back(p[0]);
+    
+    print(p);
 
     vector<point>CHp = jarvisMarch(p);
-    for(int i = 0; i < CHp.size(); i++){
-        cout << CHp[i].x << ' ' <<CHp[i].y <<'\n';
-    }
+    int m = sz(CHp);
     
-    cout << '\n' << isConvex(CHp);
+    print(CHp);
+
+    CHp = grahamScan(p);
+    m = sz(CHp);
+    print(CHp);
+
+    cout << isConvex(CHp);
     return 0;
 }
