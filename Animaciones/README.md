@@ -12,15 +12,15 @@ Para instalar usar ``pacman -S (direccion del archivo)``, la direccion se encuen
 
 Una vez instalado lo anterior, ir al directorio de animaciones y ejecutar lo siguiente para configurar el proyecto
 
-                cmake -S . -B build
+cmake -S . -B build
 
 seguido construir el proyecto con
 
-                cmake --build build
+cmake --build build
 
 Para ejecutarlo:
 
-                ./build/Algoritmo
+./build/Algoritmo
 
 donde algoritmo puede ser 
 
