@@ -66,9 +66,10 @@ vector<point> grahamScan(vector<point> &p){
     }
 
     swap(p[0], p[l]);
-    point pivot = p[0];
     sort(++p.begin(), p.end(),[&](point a, point b){
-        return ccw(p[0], a, b);
+         if (ccw(p[0], a, b)) return true;
+        if (ccw(p[0], b, a)) return false;
+        return dist(p[0], a) < dist(p[0], b);
     });
     
     vector<point> CH({p[n-1],p[0],p[1]});
@@ -82,6 +83,14 @@ vector<point> grahamScan(vector<point> &p){
             CH.pop_back();
         }
     }
+    return CH;
+}
+
+vector<point> monotoneChain(vector<point> &p){
+    
+
+
+    vector<point> CH;
     return CH;
 }
 
