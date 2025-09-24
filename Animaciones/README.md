@@ -20,7 +20,7 @@ seguido construir el proyecto con
 
 Para ejecutarlo:
 
-    ./build/Algoritmo
+    ./build/algoritmo
 
 donde algoritmo puede ser 
 
