@@ -61,6 +61,9 @@ inline point operator/(point p, double esc){
     return p*esc;
 }
 
+inline bool operator<(point p, point q){
+    return (p.x < q.x || (abs((p.x - q.x)) < EPS && p.y < q.y));
+}
 inline double cross(point p, point q){
     return p.x*q.y-q.x*p.y;
 }
@@ -89,6 +92,6 @@ inline void print(const vector<point> &p){
     int n = (int)p.size();
     for(int i = 0; i < n; i++){
         cout << i+1 << ": " <<  p[i].x << ' ' << p[i].y << '\n';
-    }
+    } 
     cout << "\n\n";
 }

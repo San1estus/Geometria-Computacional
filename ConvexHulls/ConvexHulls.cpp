@@ -35,7 +35,7 @@ vector<point> jarvisMarch(vector<point> &p){
     vector<point> CH;
     int l = 0;
     for(int i = 1; i < n; i++){
-        if(p[i].x < p[l].x || (p[i].x == p[l].x && p[i].y < p[l].y)) l = i;
+        if(p[i].x < p[l].x || (abs(p[i].x -p[l].x)< EPS && p[i].y < p[l].y)) l = i;
     }
 
     int pivot = l, k;
@@ -62,12 +62,12 @@ vector<point> grahamScan(vector<point> &p){
     int l = 0;
     
     for(int i = 1; i < n; i++){
-        if(p[i].x < p[l].x || (abs((p[i].x - p[l].x)) < EPS && p[i].y < p[l].y)) l = i;
+        if(p[i] < p[l]) l = i;
     }
 
     swap(p[0], p[l]);
     sort(++p.begin(), p.end(),[&](point a, point b){
-         if (ccw(p[0], a, b)) return true;
+        if (ccw(p[0], a, b)) return true;
         if (ccw(p[0], b, a)) return false;
         return dist(p[0], a) < dist(p[0], b);
     });
@@ -87,10 +87,11 @@ vector<point> grahamScan(vector<point> &p){
 }
 
 vector<point> monotoneChain(vector<point> &p){
+    int n = sz(p);
+    vector<point> CH(2*n);
+    sort(p.begin(), p.end());
     
-
-
-    vector<point> CH;
+    
     return CH;
 }
 
