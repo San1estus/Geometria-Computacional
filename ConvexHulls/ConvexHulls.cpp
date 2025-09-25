@@ -89,10 +89,21 @@ vector<point> grahamScan(vector<point> &p){
 
 vector<point> monotoneChain(vector<point> &p){
     int n = sz(p);
+    int k = 0;
     vector<point> CH(2*n);
     sort(p.begin(), p.end());
-    
-    
+    for(int i = 0; i < n; i++){
+        while((k >= 2) && !ccw(CH[k-2], CH[k-1], p[i])) --k;
+        CH[k++] = p[i];
+    }
+
+    for(int i = n-2,t = k+1; i>=0; i--){
+        while((k >= t) && !ccw(CH[k-2], CH[k-1], p[i])) --k;
+        CH[k++] = p[i];
+    }
+
+    CH.resize(k);
+    CH.pop_back();
     return CH;
 }
 
@@ -106,18 +117,18 @@ int main(void){
 
     vector<point>CHp = jarvisMarch(p);
     int m = sz(CHp);
-    cout << isConvex(CHp) << '\n';
     print(CHp);
+    cout << isConvex(CHp) << '\n';
 
     CHp = grahamScan(p);
     m = sz(CHp);
     print(CHp);
-    cout << isConvex(CHp);
+    cout << isConvex(CHp) << '\n';
     
     CHp = monotoneChain(p);
     m = sz(CHp);
     print(CHp);
 
-    cout << isConvex(CHp);
+    cout << isConvex(CHp) << "\nFin";
     return 0;
 }
