@@ -124,7 +124,8 @@ int main() {
     points = randomPoints(30);
 
     if (!glfwInit()) return -1;
-    GLFWwindow* window = glfwCreateWindow(640, 480, "Jarvis March", NULL, NULL);
+    glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+    GLFWwindow* window = glfwCreateWindow(1920, 1080, "Graham Scan", NULL, NULL);
     if (!window) { glfwTerminate(); return -1; }
 
     glfwMakeContextCurrent(window);

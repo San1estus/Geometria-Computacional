@@ -41,58 +41,47 @@ void drawLine(point p, point q, float r, float g, float b, float width = 1.0f) {
 vector<point> points;
 vector<point> hull;
 
-int pivotIdx = -1;      // Punto actual del hull
+int pivotIdx = 0;      // Punto actual del hull
 bool finished = false;
-bool popping = false;
+bool lowerHull = true;
+int lowerHullSize = 0;
+bool sorted = false;
 
 float lastTime = 0;
 
 void stepMonotoneChain(vector<point>& p) {
     int n = (int)p.size();
     if (finished || n <= 3) return; // n <=3 representa una linea o triangulo
-
-    if (hull.empty()) {
-        int l = 0;
-        
-        for (int i = 1; i < n; i++) {
-            if (p[i].x < p[l].x || (fabs(p[i].x - p[l].x) < EPS && p[i].y < p[l].y)) l = i;
-        }
-
-        pivotIdx = l;
-		swap(p[0], p[pivotIdx]);
-
-        sort(++p.begin(), p.end(), [&](point a, point b) {
-            if (ccw(p[0], a, b)) return true;
-            if (ccw(p[0], b, a)) return false;
-            return dist(p[0], a) < dist(p[0], b);
-            });
-
-		hull.push_back(p[0]);
-		hull.push_back(p[1]);
-
-        pivotIdx = 2;
-        return;
-    }
-
-    if (pivotIdx < n) {
-        point next = p[pivotIdx];
-        if (!popping) {
-			hull.push_back(next);
-            popping = true;
+    
+    if(lowerHull){
+        if(pivotIdx < n){
+            while(hull.size() >= 2 && !ccw(hull[hull.size()-2], hull.back(), p[pivotIdx])){
+                hull.pop_back();
+            }
+            hull.push_back(p[pivotIdx++]);
         }
         else{
-            if(hull.size() > 2 && !ccw(hull[hull.size() - 3], hull[hull.size() - 2], next)) {
-                hull.erase(hull.end()-2); // Para nada optimo, pero la visualizacion se ve bonita.
-			}
-            else {
-                pivotIdx++;
-                popping = false;
+            lowerHull = false;
+            lowerHullSize = hull.size();
+            pivotIdx = n - 2;
+        }
+    }
+    else{
+        if(pivotIdx >= 0){
+            while(hull.size() >= lowerHullSize && !ccw(hull[hull.size()-2], hull.back(), p[pivotIdx])){
+                hull.pop_back();
             }
-		}
+            hull.push_back(p[pivotIdx--]);
+        }
+        else{
+            finished = true;
+            if(!hull.empty()){
+                hull.pop_back();
+            }
+        }
     }
-    else {
-        finished = true;
-    }
+
+    
 }
 
 void render() {
@@ -122,9 +111,10 @@ void render() {
 int main() {
     srand(time(NULL));
     points = randomPoints(30);
-
+    sort(points.begin(), points.end());
     if (!glfwInit()) return -1;
-    GLFWwindow* window = glfwCreateWindow(640, 480, "Jarvis March", NULL, NULL);
+    glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+    GLFWwindow* window = glfwCreateWindow(1920, 1080, "Monotone Chain", NULL, NULL);
     if (!window) { glfwTerminate(); return -1; }
 
     glfwMakeContextCurrent(window);
@@ -138,7 +128,7 @@ int main() {
         float now = glfwGetTime();
 
         if (now - lastTime > 0.2) {
-            stepGrahamScan(points);
+            stepMonotoneChain(points);
             lastTime = now;
         }
 

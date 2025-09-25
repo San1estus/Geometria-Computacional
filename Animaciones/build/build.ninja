@@ -11,7 +11,7 @@
 # =============================================================================
 
 # =============================================================================
-# Project: Visualizacion
+# Project: Animaciones
 # Configurations: 
 # =============================================================================
 
@@ -34,7 +34,7 @@ include CMakeFiles/rules.ninja
 #############################################
 # Logical path to working directory; prefix for absolute paths.
 
-cmake_ninja_workdir = C$:/Users/jrodr/Documents/Geometria-Computacional/Visualizacion/build/
+cmake_ninja_workdir = C$:/Users/jrodr/Documents/Geometria-Computacional/Animaciones/build/
 # =============================================================================
 # Object build statements for EXECUTABLE target JarvisMarch
 
@@ -44,7 +44,7 @@ cmake_ninja_workdir = C$:/Users/jrodr/Documents/Geometria-Computacional/Visualiz
 
 build cmake_object_order_depends_target_JarvisMarch: phony || CMakeFiles/JarvisMarch.dir
 
-build CMakeFiles/JarvisMarch.dir/JarvisMarch.cpp.obj: CXX_COMPILER__JarvisMarch_unscanned_ C$:/Users/jrodr/Documents/Geometria-Computacional/Visualizacion/JarvisMarch.cpp || cmake_object_order_depends_target_JarvisMarch
+build CMakeFiles/JarvisMarch.dir/JarvisMarch.cpp.obj: CXX_COMPILER__JarvisMarch_unscanned_ C$:/Users/jrodr/Documents/Geometria-Computacional/Animaciones/JarvisMarch.cpp || cmake_object_order_depends_target_JarvisMarch
   DEFINES = -DGLFW_DLL
   DEP_FILE = CMakeFiles\JarvisMarch.dir\JarvisMarch.cpp.obj.d
   FLAGS = -std=gnu++20
@@ -77,7 +77,7 @@ build JarvisMarch.exe: CXX_EXECUTABLE_LINKER__JarvisMarch_ CMakeFiles/JarvisMarc
 
 build cmake_object_order_depends_target_GrahamScan: phony || CMakeFiles/GrahamScan.dir
 
-build CMakeFiles/GrahamScan.dir/GrahamScan.cpp.obj: CXX_COMPILER__GrahamScan_unscanned_ C$:/Users/jrodr/Documents/Geometria-Computacional/Visualizacion/GrahamScan.cpp || cmake_object_order_depends_target_GrahamScan
+build CMakeFiles/GrahamScan.dir/GrahamScan.cpp.obj: CXX_COMPILER__GrahamScan_unscanned_ C$:/Users/jrodr/Documents/Geometria-Computacional/Animaciones/GrahamScan.cpp || cmake_object_order_depends_target_GrahamScan
   DEFINES = -DGLFW_DLL
   DEP_FILE = CMakeFiles\GrahamScan.dir\GrahamScan.cpp.obj.d
   FLAGS = -std=gnu++20
@@ -101,12 +101,45 @@ build GrahamScan.exe: CXX_EXECUTABLE_LINKER__GrahamScan_ CMakeFiles/GrahamScan.d
   TARGET_IMPLIB = libGrahamScan.dll.a
   TARGET_PDB = GrahamScan.exe.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target MonotoneChain
+
+
+#############################################
+# Order-only phony target for MonotoneChain
+
+build cmake_object_order_depends_target_MonotoneChain: phony || CMakeFiles/MonotoneChain.dir
+
+build CMakeFiles/MonotoneChain.dir/MonotoneChain.cpp.obj: CXX_COMPILER__MonotoneChain_unscanned_ C$:/Users/jrodr/Documents/Geometria-Computacional/Animaciones/MonotoneChain.cpp || cmake_object_order_depends_target_MonotoneChain
+  DEFINES = -DGLFW_DLL
+  DEP_FILE = CMakeFiles\MonotoneChain.dir\MonotoneChain.cpp.obj.d
+  FLAGS = -std=gnu++20
+  OBJECT_DIR = CMakeFiles\MonotoneChain.dir
+  OBJECT_FILE_DIR = CMakeFiles\MonotoneChain.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target MonotoneChain
+
+
+#############################################
+# Link the executable MonotoneChain.exe
+
+build MonotoneChain.exe: CXX_EXECUTABLE_LINKER__MonotoneChain_ CMakeFiles/MonotoneChain.dir/MonotoneChain.cpp.obj | C$:/msys64/ucrt64/lib/libglfw3.dll.a C$:/msys64/ucrt64/lib/libglew32.dll.a
+  LINK_LIBRARIES = C:/msys64/ucrt64/lib/libglfw3.dll.a  C:/msys64/ucrt64/lib/libglew32.dll.a  -lopengl32  -lglu32  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  OBJECT_DIR = CMakeFiles\MonotoneChain.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_FILE = MonotoneChain.exe
+  TARGET_IMPLIB = libMonotoneChain.dll.a
+  TARGET_PDB = MonotoneChain.exe.dbg
+
 
 #############################################
 # Utility command for edit_cache
 
 build CMakeFiles/edit_cache.util: CUSTOM_COMMAND
-  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Users\jrodr\Documents\Geometria-Computacional\Visualizacion\build && C:\msys64\ucrt64\bin\cmake.exe -E echo "No interactive CMake dialog available.""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Users\jrodr\Documents\Geometria-Computacional\Animaciones\build && C:\msys64\ucrt64\bin\cmake.exe -E echo "No interactive CMake dialog available.""
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -117,7 +150,7 @@ build edit_cache: phony CMakeFiles/edit_cache.util
 # Utility command for rebuild_cache
 
 build CMakeFiles/rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Users\jrodr\Documents\Geometria-Computacional\Visualizacion\build && C:\msys64\ucrt64\bin\cmake.exe --regenerate-during-build -SC:\Users\jrodr\Documents\Geometria-Computacional\Visualizacion -BC:\Users\jrodr\Documents\Geometria-Computacional\Visualizacion\build"
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Users\jrodr\Documents\Geometria-Computacional\Animaciones\build && C:\msys64\ucrt64\bin\cmake.exe --regenerate-during-build -SC:\Users\jrodr\Documents\Geometria-Computacional\Animaciones -BC:\Users\jrodr\Documents\Geometria-Computacional\Animaciones\build"
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -131,15 +164,17 @@ build GrahamScan: phony GrahamScan.exe
 
 build JarvisMarch: phony JarvisMarch.exe
 
+build MonotoneChain: phony MonotoneChain.exe
+
 # =============================================================================
 # Folder targets.
 
 # =============================================================================
 
 #############################################
-# Folder: C:/Users/jrodr/Documents/Geometria-Computacional/Visualizacion/build
+# Folder: C:/Users/jrodr/Documents/Geometria-Computacional/Animaciones/build
 
-build all: phony JarvisMarch.exe GrahamScan.exe
+build all: phony JarvisMarch.exe GrahamScan.exe MonotoneChain.exe
 
 # =============================================================================
 # Built-in targets
@@ -148,14 +183,14 @@ build all: phony JarvisMarch.exe GrahamScan.exe
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja: RERUN_CMAKE | C$:/Users/jrodr/Documents/Geometria-Computacional/Visualizacion/CMakeLists.txt C$:/msys64/ucrt64/lib/cmake/glew/CopyImportedTargetProperties.cmake C$:/msys64/ucrt64/lib/cmake/glew/glew-config.cmake C$:/msys64/ucrt64/lib/cmake/glew/glew-targets-release.cmake C$:/msys64/ucrt64/lib/cmake/glew/glew-targets.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3Config.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3ConfigVersion.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3Targets-release.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3Targets.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeCInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeCXXInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeCommonLanguageInclude.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeGenericSystem.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeInitializeConfigs.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeLanguageInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeRCInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeSystemSpecificInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/GNU-C.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/GNU-CXX.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/GNU.cmake C$:/msys64/ucrt64/share/cmake/Modules/FindGLEW.cmake C$:/msys64/ucrt64/share/cmake/Modules/FindPackageHandleStandardArgs.cmake C$:/msys64/ucrt64/share/cmake/Modules/FindPackageMessage.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-C-ABI.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-C.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-CXX-ABI.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-CXX.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-Initialize.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-windres.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/WindowsPaths.cmake C$:/msys64/ucrt64/share/cmake/Modules/SelectLibraryConfigurations.cmake CMakeCache.txt CMakeFiles/3.28.1/CMakeCCompiler.cmake CMakeFiles/3.28.1/CMakeCXXCompiler.cmake CMakeFiles/3.28.1/CMakeRCCompiler.cmake CMakeFiles/3.28.1/CMakeSystem.cmake
+build build.ninja: RERUN_CMAKE | C$:/Users/jrodr/Documents/Geometria-Computacional/Animaciones/CMakeLists.txt C$:/msys64/ucrt64/lib/cmake/glew/CopyImportedTargetProperties.cmake C$:/msys64/ucrt64/lib/cmake/glew/glew-config.cmake C$:/msys64/ucrt64/lib/cmake/glew/glew-targets-release.cmake C$:/msys64/ucrt64/lib/cmake/glew/glew-targets.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3Config.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3ConfigVersion.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3Targets-release.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3Targets.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeCInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeCXXInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeCommonLanguageInclude.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeGenericSystem.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeInitializeConfigs.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeLanguageInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeRCInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeSystemSpecificInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/GNU-C.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/GNU-CXX.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/GNU.cmake C$:/msys64/ucrt64/share/cmake/Modules/FindGLEW.cmake C$:/msys64/ucrt64/share/cmake/Modules/FindPackageHandleStandardArgs.cmake C$:/msys64/ucrt64/share/cmake/Modules/FindPackageMessage.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-C-ABI.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-C.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-CXX-ABI.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-CXX.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-Initialize.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-windres.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/WindowsPaths.cmake C$:/msys64/ucrt64/share/cmake/Modules/SelectLibraryConfigurations.cmake CMakeCache.txt CMakeFiles/3.28.1/CMakeCCompiler.cmake CMakeFiles/3.28.1/CMakeCXXCompiler.cmake CMakeFiles/3.28.1/CMakeRCCompiler.cmake CMakeFiles/3.28.1/CMakeSystem.cmake
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build C$:/Users/jrodr/Documents/Geometria-Computacional/Visualizacion/CMakeLists.txt C$:/msys64/ucrt64/lib/cmake/glew/CopyImportedTargetProperties.cmake C$:/msys64/ucrt64/lib/cmake/glew/glew-config.cmake C$:/msys64/ucrt64/lib/cmake/glew/glew-targets-release.cmake C$:/msys64/ucrt64/lib/cmake/glew/glew-targets.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3Config.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3ConfigVersion.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3Targets-release.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3Targets.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeCInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeCXXInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeCommonLanguageInclude.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeGenericSystem.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeInitializeConfigs.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeLanguageInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeRCInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeSystemSpecificInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/GNU-C.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/GNU-CXX.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/GNU.cmake C$:/msys64/ucrt64/share/cmake/Modules/FindGLEW.cmake C$:/msys64/ucrt64/share/cmake/Modules/FindPackageHandleStandardArgs.cmake C$:/msys64/ucrt64/share/cmake/Modules/FindPackageMessage.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-C-ABI.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-C.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-CXX-ABI.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-CXX.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-Initialize.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-windres.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/WindowsPaths.cmake C$:/msys64/ucrt64/share/cmake/Modules/SelectLibraryConfigurations.cmake CMakeCache.txt CMakeFiles/3.28.1/CMakeCCompiler.cmake CMakeFiles/3.28.1/CMakeCXXCompiler.cmake CMakeFiles/3.28.1/CMakeRCCompiler.cmake CMakeFiles/3.28.1/CMakeSystem.cmake: phony
+build C$:/Users/jrodr/Documents/Geometria-Computacional/Animaciones/CMakeLists.txt C$:/msys64/ucrt64/lib/cmake/glew/CopyImportedTargetProperties.cmake C$:/msys64/ucrt64/lib/cmake/glew/glew-config.cmake C$:/msys64/ucrt64/lib/cmake/glew/glew-targets-release.cmake C$:/msys64/ucrt64/lib/cmake/glew/glew-targets.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3Config.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3ConfigVersion.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3Targets-release.cmake C$:/msys64/ucrt64/lib/cmake/glfw3/glfw3Targets.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeCInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeCXXInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeCommonLanguageInclude.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeGenericSystem.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeInitializeConfigs.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeLanguageInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeRCInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeSystemSpecificInformation.cmake C$:/msys64/ucrt64/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/GNU-C.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/GNU-CXX.cmake C$:/msys64/ucrt64/share/cmake/Modules/Compiler/GNU.cmake C$:/msys64/ucrt64/share/cmake/Modules/FindGLEW.cmake C$:/msys64/ucrt64/share/cmake/Modules/FindPackageHandleStandardArgs.cmake C$:/msys64/ucrt64/share/cmake/Modules/FindPackageMessage.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-C-ABI.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-C.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-CXX-ABI.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU-CXX.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-GNU.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-Initialize.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-windres.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/Windows.cmake C$:/msys64/ucrt64/share/cmake/Modules/Platform/WindowsPaths.cmake C$:/msys64/ucrt64/share/cmake/Modules/SelectLibraryConfigurations.cmake CMakeCache.txt CMakeFiles/3.28.1/CMakeCCompiler.cmake CMakeFiles/3.28.1/CMakeCXXCompiler.cmake CMakeFiles/3.28.1/CMakeRCCompiler.cmake CMakeFiles/3.28.1/CMakeSystem.cmake: phony
 
 
 #############################################

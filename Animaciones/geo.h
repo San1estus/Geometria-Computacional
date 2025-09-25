@@ -62,7 +62,7 @@ inline point operator/(point p, double esc){
 }
 
 inline bool operator<(point p, point q){
-    return (p.x < q.x || (abs((p.x - q.x)) < EPS && p.y < q.y));
+    return (p.x < q.x || (fabs((p.x - q.x)) < EPS && p.y < q.y));
 }
 inline double cross(point p, point q){
     return p.x*q.y-q.x*p.y;
