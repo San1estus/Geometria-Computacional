@@ -17,6 +17,7 @@ vector<point> randomPoints(int n){
 
 inline bool isConvex(vector<point> &p){
     int n = p.size();
+    p.push_back(p[0]);
     if(n <= 3) return false;  // Se duplica el primer vertice, por lo que n <= 3 es un punto o una linea.
     bool isLeft = ccw(p[0], p[1], p[2]);
     int dir = 0;
@@ -26,6 +27,7 @@ inline bool isConvex(vector<point> &p){
             else if ((cross > 0 ? 1 : -1) != dir) return false;
         }
     }
+    p.pop_back();
     return true;
 }
 
@@ -52,7 +54,6 @@ vector<point> jarvisMarch(vector<point> &p){
         pivot = k;
     }while(pivot!=l);
 
-    CH.push_back(CH[0]);
     return CH;
 }
 
@@ -72,7 +73,7 @@ vector<point> grahamScan(vector<point> &p){
         return dist(p[0], a) < dist(p[0], b);
     });
     
-    vector<point> CH({p[n-1],p[0],p[1]});
+    vector<point> CH({p[0],p[1]});
     int i = 2;
     while(i < n){
         int j = sz(CH)-1;
@@ -105,10 +106,15 @@ int main(void){
 
     vector<point>CHp = jarvisMarch(p);
     int m = sz(CHp);
-    
+    cout << isConvex(CHp) << '\n';
     print(CHp);
 
     CHp = grahamScan(p);
+    m = sz(CHp);
+    print(CHp);
+    cout << isConvex(CHp);
+    
+    CHp = monotoneChain(p);
     m = sz(CHp);
     print(CHp);
 
