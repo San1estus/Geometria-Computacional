@@ -19,7 +19,7 @@ vector<point> randomPoints(int n){
 inline bool isConvex(vector<point> &p){
     int n = sz(p);
     if (n < 3) return false; 
-    if (n == 3) return true;  // Si el la cantidad de puntos es < 3 es un punto o una linea, si n = 3 es un triangulo.
+    if (n == 3) return true;  // Si la cantidad de puntos es < 3 es un punto o una linea, si n = 3 es un triangulo.
     int dir = 0;
     
     for(int i = 0; i < n; i++){
@@ -34,7 +34,8 @@ inline bool isConvex(vector<point> &p){
 
 vector<point> jarvisMarch(vector<point> &p){
     int n = sz(p);
-    if(n<=3) return p;
+    if(n < 3){cout << "Es un(a) " << (n%2 ? "punto" : "linea") << '\n'; return p;}
+    if(n<=3) return p; // Si n = 3 es un triangulo.
     vector<point> CH;
     int l = 0;
     for(int i = 1; i < n; i++){
@@ -65,7 +66,8 @@ vector<point> jarvisMarch(vector<point> &p){
 
 vector<point> grahamScan(vector<point> &p){
     int n = sz(p);
-    if(n<=3) return p;
+    if(n < 3){cout << "Es un(a) " << (n%2 ? "punto" : "linea") << '\n'; return p;}
+    if(n<=3) return p; // Si n = 3 es un triangulo.
     int l = 0;
     
     for(int i = 1; i < n; i++){
@@ -98,15 +100,19 @@ vector<point> grahamScan(vector<point> &p){
 
 vector<point> monotoneChain(vector<point> &p){
     int n = sz(p);
+    if(n < 3){cout << "Es un(a) " << (n%2 ? "punto" : "linea") << '\n'; return p;}
+    if(n==3) return p; // Si n = 3 es un triangulo.
     int k = 0;
     vector<point> CH(2*n);
 
+    // Hace el hull inferior, compara hacia arriba
     sort(p.begin(), p.end());
     for(int i = 0; i < n; i++){
         while((k >= 2) && !ccw(CH[k-2], CH[k-1], p[i])) --k;
         CH[k++] = p[i];
     }
 
+    // Hace el hull superior, compara hacia abajo
     for(int i = n-2, t = k+1; i>=0; i--){
         while((k >= t) && !ccw(CH[k-2], CH[k-1], p[i])) --k;
         CH[k++] = p[i];
