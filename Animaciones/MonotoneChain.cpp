@@ -68,7 +68,7 @@ void stepMonotoneChain(vector<point>& p) {
     }
     else{
         if(pivotIdx >= 0){
-            while(hull.size() >= lowerHullSize && !ccw(hull[hull.size()-2], hull.back(), p[pivotIdx])){
+            while(hull.size() > lowerHullSize && !ccw(hull[hull.size()-2], hull.back(), p[pivotIdx])){
                 hull.pop_back();
             }
             hull.push_back(p[pivotIdx--]);
@@ -117,6 +117,9 @@ int main() {
     GLFWwindow* window = glfwCreateWindow(1920, 1080, "Monotone Chain", NULL, NULL);
     if (!window) { glfwTerminate(); return -1; }
 
+    // Modificar esta variable para ajustar el tiempo entre pasos
+    float timePerStep = 0.5;
+    
     glfwMakeContextCurrent(window);
     if (glewInit() != GLEW_OK) {
         cout << "Error init GLEW\n"; return -1;
@@ -127,7 +130,7 @@ int main() {
 
         float now = glfwGetTime();
 
-        if (now - lastTime > 0.2) {
+        if (now - lastTime > timePerStep) {
             stepMonotoneChain(points);
             lastTime = now;
         }

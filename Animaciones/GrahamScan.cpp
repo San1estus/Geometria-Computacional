@@ -132,13 +132,15 @@ int main() {
     if (glewInit() != GLEW_OK) {
         cout << "Error init GLEW\n"; return -1;
     }
-
+    // Modificar esta variable para ajustar el tiempo entre pasos
+    float timePerStep = 0.5;
+    
     lastTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
 
         float now = glfwGetTime();
 
-        if (now - lastTime > 0.2) {
+        if (now - lastTime > timePerStep) {
             stepGrahamScan(points);
             lastTime = now;
         }

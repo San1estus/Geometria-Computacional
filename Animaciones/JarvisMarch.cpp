@@ -127,12 +127,15 @@ int main() {
         cout << "Error init GLEW\n"; return -1;
     }
 
+    // Modificar esta variable para ajustar el tiempo entre pasos
+    float timePerStep = 0.5;
+
     lastTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
 
         float now = glfwGetTime();
 
-        if (now - lastTime > 0.05) { 
+        if (now - lastTime > timePerStep) { 
             stepJarvisMarch(points);
             lastTime = now;
         }

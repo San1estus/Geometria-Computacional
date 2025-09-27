@@ -3,6 +3,7 @@
 #define sz(a) (int)a.size()
 using namespace std;
 
+// Función para generar puntos aleatorios
 vector<point> randomPoints(int n){
     vector<point>points;
     for(int i = 0; i < n; i++){
@@ -16,13 +17,13 @@ vector<point> randomPoints(int n){
 }
 
 inline bool isConvex(vector<point> &p){
-    int n = p.size();
-    p.push_back(p[0]);
-    if(n <= 3) return false;  // Se duplica el primer vertice, por lo que n <= 3 es un punto o una linea.
-    bool isLeft = ccw(p[0], p[1], p[2]);
+    int n = sz(p);
+    if (n < 3) return false; 
+    if (n == 3) return true;  // Si el la cantidad de puntos es < 3 es un punto o una linea, si n = 3 es un triangulo.
     int dir = 0;
-    for(int i = 1; i < n; i++){
-        if (ccw(p[i],p[i+1],p[(i+2) == n ? 1 : i+2]) != 0) {
+    
+    for(int i = 0; i < n; i++){
+        if (ccw(p[i],p[(i+1) % n],p[(i+2) % n]) != 0) {
             if (dir == 0) dir = (cross > 0 ? 1 : -1);
             else if ((cross > 0 ? 1 : -1) != dir) return false;
         }
@@ -37,7 +38,7 @@ vector<point> jarvisMarch(vector<point> &p){
     vector<point> CH;
     int l = 0;
     for(int i = 1; i < n; i++){
-        if(p[i].x < p[l].x || (abs(p[i].x -p[l].x)< EPS && p[i].y < p[l].y)) l = i;
+        if(p[i] < p[l]) l = i;
     }
 
     int pivot = l, k;
@@ -49,6 +50,11 @@ vector<point> jarvisMarch(vector<point> &p){
                 if(ccw(p[pivot], p[i], p[k])){
                     k=i;
                 }
+
+                // Maneja el caso colineal
+                else if(!ccw(p[pivot], p[i], p[k]) && collinear(p[pivot], p[i], p[k]) && dist(p[pivot], p[i]) > dist(p[pivot], p[k])){
+                k = i;
+            }
             }
         }
         pivot = k;
@@ -58,7 +64,7 @@ vector<point> jarvisMarch(vector<point> &p){
 }
 
 vector<point> grahamScan(vector<point> &p){
-    int n = p.size();
+    int n = sz(p);
     if(n<=3) return p;
     int l = 0;
     
@@ -67,9 +73,12 @@ vector<point> grahamScan(vector<point> &p){
     }
 
     swap(p[0], p[l]);
+    
     sort(++p.begin(), p.end(),[&](point a, point b){
         if (ccw(p[0], a, b)) return true;
         if (ccw(p[0], b, a)) return false;
+        
+        // Esto maneja el caso colineal, prefiriendo añadir mas puntos.
         return dist(p[0], a) < dist(p[0], b);
     });
     
@@ -91,13 +100,14 @@ vector<point> monotoneChain(vector<point> &p){
     int n = sz(p);
     int k = 0;
     vector<point> CH(2*n);
+
     sort(p.begin(), p.end());
     for(int i = 0; i < n; i++){
         while((k >= 2) && !ccw(CH[k-2], CH[k-1], p[i])) --k;
         CH[k++] = p[i];
     }
 
-    for(int i = n-2,t = k+1; i>=0; i--){
+    for(int i = n-2, t = k+1; i>=0; i--){
         while((k >= t) && !ccw(CH[k-2], CH[k-1], p[i])) --k;
         CH[k++] = p[i];
     }
@@ -110,21 +120,26 @@ vector<point> monotoneChain(vector<point> &p){
 int main(void){
     srand(time(NULL));
     int n;
+    cout << "Indica la cantidad de puntos a generar: ";
     cin >> n;
     vector<point> p = randomPoints(n);
     
-    print(p);
+    // Descomentar para imprimir todos los puntos
+    //print(p);
 
     vector<point>CHp = jarvisMarch(p);
     int m = sz(CHp);
     print(CHp);
-    cout << isConvex(CHp) << '\n';
 
+    cout << isConvex(CHp) << '\n';
+    CHp.clear();
+    
     CHp = grahamScan(p);
     m = sz(CHp);
     print(CHp);
     cout << isConvex(CHp) << '\n';
-    
+    CHp.clear();
+
     CHp = monotoneChain(p);
     m = sz(CHp);
     print(CHp);
