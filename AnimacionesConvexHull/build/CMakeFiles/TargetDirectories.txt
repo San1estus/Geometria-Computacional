@@ -1,5 +1,5 @@
-C:/Users/jrodr/Documents/Geometria-Computacional/Animaciones/build/CMakeFiles/JarvisMarch.dir
-C:/Users/jrodr/Documents/Geometria-Computacional/Animaciones/build/CMakeFiles/GrahamScan.dir
-C:/Users/jrodr/Documents/Geometria-Computacional/Animaciones/build/CMakeFiles/MonotoneChain.dir
-C:/Users/jrodr/Documents/Geometria-Computacional/Animaciones/build/CMakeFiles/edit_cache.dir
-C:/Users/jrodr/Documents/Geometria-Computacional/Animaciones/build/CMakeFiles/rebuild_cache.dir
+C:/Users/jrodr/Documents/Geometria-Computacional/AnimacionesConvexHull/build/CMakeFiles/JarvisMarch.dir
+C:/Users/jrodr/Documents/Geometria-Computacional/AnimacionesConvexHull/build/CMakeFiles/GrahamScan.dir
+C:/Users/jrodr/Documents/Geometria-Computacional/AnimacionesConvexHull/build/CMakeFiles/MonotoneChain.dir
+C:/Users/jrodr/Documents/Geometria-Computacional/AnimacionesConvexHull/build/CMakeFiles/edit_cache.dir
+C:/Users/jrodr/Documents/Geometria-Computacional/AnimacionesConvexHull/build/CMakeFiles/rebuild_cache.dir

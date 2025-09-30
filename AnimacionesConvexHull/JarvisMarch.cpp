@@ -128,7 +128,7 @@ int main() {
     }
 
     // Modificar esta variable para ajustar el tiempo entre pasos
-    float timePerStep = 0.5;
+    float timePerStep = 0.05;
 
     lastTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {

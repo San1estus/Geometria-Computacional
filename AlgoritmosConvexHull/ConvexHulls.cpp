@@ -24,11 +24,11 @@ inline bool isConvex(vector<point> &p){
     
     for(int i = 0; i < n; i++){
         if (ccw(p[i],p[(i+1) % n],p[(i+2) % n]) != 0) {
-            if (dir == 0) dir = (cross > 0 ? 1 : -1);
-            else if ((cross > 0 ? 1 : -1) != dir) return false;
+            if (dir == 0) dir = (ccw(p[i],p[(i+1) % n],p[(i+2) % n]) > 0 ? 1 : -1);
+            else if ((ccw(p[i],p[(i+1) % n],p[(i+2) % n]) > 0 ? 1 : -1) != dir) return false;
+            else dir = ccw(p[i],p[(i+1) % n],p[(i+2) % n]);
         }
     }
-    p.pop_back();
     return true;
 }
 
