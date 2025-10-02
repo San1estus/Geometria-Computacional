@@ -55,7 +55,7 @@ void stepGrahamScan(vector<point>& p) {
         int l = 0;
         
         for (int i = 1; i < n; i++) {
-            if (p[i].x < p[l].x || (fabs(p[i].x - p[l].x) < EPS && p[i].y < p[l].y)) l = i;
+            if (p[i] < p[l]) l = i;
         }
 
         pivotIdx = l;
