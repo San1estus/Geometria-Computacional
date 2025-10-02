@@ -49,6 +49,8 @@ bool sorted = false;
 
 float lastTime = 0;
 
+// Algoritmo paso a paso
+
 void stepMonotoneChain(vector<point>& p) {
     int n = (int)p.size();
     if (finished || n <= 3) return; // n <=3 representa una linea o triangulo
@@ -97,9 +99,6 @@ void render() {
         glEnd();
     }
 
-    if (!finished && pivotIdx != -1 && pivotIdx < points.size()) {
-        drawLine(points[pivotIdx], points[pivotIdx], 1, 1, 0.5);
-    }
 
     if (finished) {
         drawLine(hull.back(), hull.front(), 1, 1, 1, 2.0f);
@@ -108,11 +107,15 @@ void render() {
     for (auto& p : hull) drawPoint(p, 1, 1, 1, 8.0f);
 }
 
+
+
 int main() {
     srand(time(NULL));
-    points = randomPoints(30);
+    // Generar puntos aleatorios
+    points = randomPoints(100);
     sort(points.begin(), points.end());
     if (!glfwInit()) return -1;
+    // Maximizar ventana
     glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
     GLFWwindow* window = glfwCreateWindow(1920, 1080, "Monotone Chain", NULL, NULL);
     if (!window) { glfwTerminate(); return -1; }
@@ -126,6 +129,7 @@ int main() {
     }
 
     lastTime = glfwGetTime();
+    // Mostrar la ventana hasta que se cierre
     while (!glfwWindowShouldClose(window)) {
 
         float now = glfwGetTime();

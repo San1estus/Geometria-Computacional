@@ -115,9 +115,11 @@ void render() {
 
 int main() {
     srand(time(NULL));
-	points = randomPoints(30);
+    // Generar puntos aleatorios
+	points = randomPoints(100);
 
     if (!glfwInit()) return -1;
+    // Maximizar ventana
     glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
     GLFWwindow* window = glfwCreateWindow(1920, 1080, "Jarvis March", NULL, NULL);
     if (!window) { glfwTerminate(); return -1; }
@@ -131,6 +133,7 @@ int main() {
     float timePerStep = 0.05;
 
     lastTime = glfwGetTime();
+    // Mostrar la ventana hasta que se cierre
     while (!glfwWindowShouldClose(window)) {
 
         float now = glfwGetTime();

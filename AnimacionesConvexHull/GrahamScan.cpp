@@ -108,10 +108,6 @@ void render() {
         glEnd();
     }
 
-    if (!finished && pivotIdx != -1 && pivotIdx < points.size()) {
-        drawLine(points[pivotIdx], points[pivotIdx], 1, 1, 0.5);
-    }
-
     if (finished) {
         drawLine(hull.back(), hull.front(), 1, 1, 1, 2.0f);
     }
@@ -121,13 +117,15 @@ void render() {
 
 int main() {
     srand(time(NULL));
-    points = randomPoints(30);
+    // Generar puntos aleatorios
+    points = randomPoints(100);
 
     if (!glfwInit()) return -1;
+    // Maximizar ventana
     glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
     GLFWwindow* window = glfwCreateWindow(1920, 1080, "Graham Scan", NULL, NULL);
     if (!window) { glfwTerminate(); return -1; }
-
+    // Crear ventana
     glfwMakeContextCurrent(window);
     if (glewInit() != GLEW_OK) {
         cout << "Error init GLEW\n"; return -1;
@@ -136,6 +134,8 @@ int main() {
     float timePerStep = 0.05;
     
     lastTime = glfwGetTime();
+
+    // Mostrar la ventana hasta que se cierre
     while (!glfwWindowShouldClose(window)) {
 
         float now = glfwGetTime();
