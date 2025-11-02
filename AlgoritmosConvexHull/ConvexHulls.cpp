@@ -1,11 +1,11 @@
-#include "geo.h"
+#include "../geo.hpp"
 #include <bits/stdc++.h>
 #define sz(a) (int)a.size()
 using namespace std;
 
 // Función para generar puntos aleatorios
-vector<point> randomPoints(int n){
-    vector<point>points;
+vector<Point> randomPoints(int n){
+    vector<Point>points;
     for(int i = 0; i < n; i++){
         double xrand = 100 * (double)rand()/(RAND_MAX+1);
         double yrand = 100 * (double)rand()/(RAND_MAX+1);
@@ -16,14 +16,14 @@ vector<point> randomPoints(int n){
     return points;
 }
 
-inline bool isConvex(vector<point> &p){
+inline bool isConvex(vector<Point> &p){
     int n = sz(p);
     if (n < 3) return false; 
     if (n == 3) return true;  // Si la cantidad de puntos es < 3 es un punto o una linea, si n = 3 es un triangulo.
     int dir = 0;
     
     for(int i = 0; i < n; i++){
-        if (ccw(p[i],p[(i+1) % n],p[(i+2) % n]) != 0) {
+        if (orientation(p[i],p[(i+1) % n],p[(i+2) % n]) != 0) {
             if (dir == 0) dir = (ccw(p[i],p[(i+1) % n],p[(i+2) % n]) > 0 ? 1 : -1);
             else if ((ccw(p[i],p[(i+1) % n],p[(i+2) % n]) > 0 ? 1 : -1) != dir) return false;
             else dir = ccw(p[i],p[(i+1) % n],p[(i+2) % n]);
@@ -32,11 +32,11 @@ inline bool isConvex(vector<point> &p){
     return true;
 }
 
-vector<point> jarvisMarch(vector<point> &p){
+vector<Point> jarvisMarch(vector<Point> &p){
     int n = sz(p);
     if(n < 3){cout << "Es un(a) " << (n%2 ? "punto" : "linea") << '\n'; return p;}
     if(n<=3) return p; // Si n = 3 es un triangulo.
-    vector<point> CH;
+    vector<Point> CH;
     int l = 0;
     for(int i = 1; i < n; i++){
         if(p[i] < p[l]) l = i;
@@ -48,12 +48,12 @@ vector<point> jarvisMarch(vector<point> &p){
         k = (pivot+1)%n;
         for(int i = 1; i < n; i++){
             if(i!=pivot){
-                if(ccw(p[pivot], p[i], p[k])){
+                if(orientation(p[pivot], p[i], p[k]) == LEFT){
                     k=i;
                 }
 
                 // Maneja el caso colineal
-                else if(!ccw(p[pivot], p[i], p[k]) && collinear(p[pivot], p[i], p[k]) && dist(p[pivot], p[i]) > dist(p[pivot], p[k])){
+                else if(!orientation(p[pivot], p[i], p[k]) != RIGHT&& orientation(p[pivot], p[i], p[k]) !=LEFT && dist(p[pivot], p[i]) > dist(p[pivot], p[k])){
                 k = i;
             }
             }
@@ -64,7 +64,7 @@ vector<point> jarvisMarch(vector<point> &p){
     return CH;
 }
 
-vector<point> grahamScan(vector<point> &p){
+vector<Point> grahamScan(vector<Point> &p){
     int n = sz(p);
     if(n < 3){cout << "Es un(a) " << (n%2 ? "punto" : "linea") << '\n'; return p;}
     if(n<=3) return p; // Si n = 3 es un triangulo.
@@ -76,7 +76,7 @@ vector<point> grahamScan(vector<point> &p){
 
     swap(p[0], p[l]);
     
-    sort(++p.begin(), p.end(),[&](point a, point b){
+    sort(++p.begin(), p.end(),[&](Point a, Point b){
         if (ccw(p[0], a, b)) return true;
         if (ccw(p[0], b, a)) return false;
         
@@ -84,7 +84,7 @@ vector<point> grahamScan(vector<point> &p){
         return dist(p[0], a) < dist(p[0], b);
     });
     
-    vector<point> CH({p[0],p[1]});
+    vector<Point> CH({p[0],p[1]});
     int i = 2;
     while(i < n){
         int j = sz(CH)-1;
@@ -98,12 +98,12 @@ vector<point> grahamScan(vector<point> &p){
     return CH;
 }
 
-vector<point> monotoneChain(vector<point> &p){
+vector<Point> monotoneChain(vector<Point> &p){
     int n = sz(p);
     if(n < 3){cout << "Es un(a) " << (n%2 ? "punto" : "linea") << '\n'; return p;}
     if(n==3) return p; // Si n = 3 es un triangulo.
     int k = 0;
-    vector<point> CH(2*n);
+    vector<Point> CH(2*n);
 
     // Hace el hull inferior, compara hacia arriba
     sort(p.begin(), p.end());
@@ -128,12 +128,12 @@ int main(void){
     int n;
     cout << "Indica la cantidad de puntos a generar: ";
     cin >> n;
-    vector<point> p = randomPoints(n);
+    vector<Point> p = randomPoints(n);
     
     // Descomentar para imprimir todos los puntos
     //print(p);
 
-    vector<point>CHp = jarvisMarch(p);
+    vector<Point>CHp = jarvisMarch(p);
     int m = sz(CHp);
     print(CHp);
 

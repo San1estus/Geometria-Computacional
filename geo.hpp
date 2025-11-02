@@ -1,5 +1,4 @@
 /*Header con todas las funciones basicas de Geometria*/
-
 #include <cmath>
 #include <vector>
 #include <iostream>
@@ -19,95 +18,95 @@ enum inOrOut{
     OUT = 2
 };
 
-struct point{
+struct Point{
     double x, y;
-    point() : x(0), y(0) {}
-    point(double x0, double y0) : x(x0), y(y0){}
+    Point() : x(0), y(0) {}
+    Point(double x0, double y0) : x(x0), y(y0){}
 
-    point& operator+=(point o){
+    Point& operator+=(Point o){
         x += o.x;
         y += o.y;
         return *this;
     }
-    point& operator-=(point o){
+    Point& operator-=(Point o){
         x -= o.x;
         y -= o.y;
         return *this;
     }
-    point& operator*=(double o){
+    Point& operator*=(double o){
         x *= o;
         y *= o;
         return *this;
     }
-    point& operator/=(double o){
+    Point& operator/=(double o){
         double div = 1.0/o;
         x /= div;
         y /= div;
         return *this;
     }
 
-    bool operator==(point o){
+    bool operator==(Point o){
         return (fabs(x-o.x) < EPS && fabs(y-o.y) < EPS);
     }
 };
 
 // Se usa para funciones que se usan de manera frecuente y son pequeñas para optimización
-point operator-(point p){
-    return point(-p.x,-p.y);
+Point operator-(Point p){
+    return Point(-p.x,-p.y);
 }
 
-point operator-(point p, point q){
-    return point(p.x-q.x,p.y-q.y);
+Point operator-(Point p, Point q){
+    return Point(p.x-q.x,p.y-q.y);
 }
 
-point operator+(point p, point q){
-    return point(p.x+q.x,p.y+q.y);
+Point operator+(Point p, Point q){
+    return Point(p.x+q.x,p.y+q.y);
 }
 
-point operator*(point p, double esc){
-    return point(p.x*esc,p.y*esc);
+Point operator*(Point p, double esc){
+    return Point(p.x*esc,p.y*esc);
 }
 
-point operator*(double esc, point p){
-    return point(p.x*esc,p.y*esc);
+Point operator*(double esc, Point p){
+    return Point(p.x*esc,p.y*esc);
 }
 
-point operator/(point p, double esc){
+Point operator/(Point p, double esc){
     esc = 1.0/esc;
     return p*esc;
 }
 
-bool operator<(point p, point q){
+bool operator<(Point p, Point q){
     return (p.x < q.x || (fabs((p.x - q.x)) < EPS && p.y < q.y));
 }
-double cross(point p, point q){
+double cross(Point p, Point q){
     return p.x*q.y-q.x*p.y;
 }
 
-double dot(point p, point q){
+double dot(Point p, Point q){
     return p.x*q.x+p.y*q.y;
 }
 
-double sqnorm(point p){
+double sqnorm(Point p){
     return dot(p,p);
 }
 
-double dist(point p, point q){
+double dist(Point p, Point q){
     return sqrt(sqnorm(p-q));
 }
 
-int orientation(point p, point q, point r){ 
+int orientation(Point p, Point q, Point r){ 
     double val = cross(p-r, q-r);
     if(fabs(val) < EPS) return COLLINEAL;
     return (val > 0 ? LEFT : RIGHT);
 }
 
-bool inBounds(point p, point q, point r){
+bool inBounds(Point p, Point q, Point r){
     return (r.x <= max(p.x, q.x) && r.x >= min(p.x, q.x) && r.y <= max(p.y, q.y) && r.y >= min(p.y, q.y));
 }
 
 
-bool intersect(point p, point q, point r, point l){
+bool intersect(Point p, Point q, Point r, Point l){
     int pqr = orientation(p, q, r);
     int pql = orientation(p, q, l);
     int rlp = orientation(r, l, p);
@@ -123,9 +122,8 @@ bool intersect(point p, point q, point r, point l){
     return false;
 }
  
-// p es el punto del que se calcula el angulo
-double angle(point p, point q, point r){
-    point qp = q-p, rp = r-p;
+double angle(Point p, Point q, Point r){
+    Point qp = q-p, rp = r-p;
 
     double cos_angle = dot(qp, rp) / ((double)sqrt(sqnorm(qp)) * (double)sqrt(sqnorm(rp)));
 
@@ -136,44 +134,30 @@ double angle(point p, point q, point r){
 
 
 
-int insidePolygon(point p, const vector<point>& points){
-    int n = sz(points);
-    if (n < 3) return OUT;
-
-    for(int i = 0; i < n; i++){
-        point p1 = points[i];
-        point p2 = points[(i + 1) % n];
-        
-        if(orientation(p1, p2, p) == COLLINEAL && inBounds(p1, p2, p)){
-            return ON;
-        }
-    }
-
-    double sum = 0.0;
-    for(int i = 0; i < n; i++){
-        point p1 = points[i];
-        point p2 = points[(i + 1) % n];
-
-        double ang = angle(p, p1, p2); 
-
-        if(orientation(p, p1, p2) == LEFT){ 
-            sum += ang; 
-        } else {
-            sum -= ang;
-        }
-    }
-
-    double TWO_PI = 2.0 * acos(-1.0);
-    double epsilon = 1e-9; 
+bool isPointInPolygon(Point p, const vector<Point>& polygon){
+    int n = sz(polygon);
     
-    if (fabs(fabs(sum) - TWO_PI) < epsilon) {
-        return IN;
-    }
+    Point far = {1e9, p.y};
+
+    int count = 0, i = 0;
+    do {
+    int next = (i + 1) % n;
     
-    return OUT; 
+    // Checamos las intersecciones del rayo con las aristas
+    if (intersect(polygon[i], polygon[next], p, far)) {
+
+        // Si interseca verificamos si es colineal, si es colineal verificamos si esta sobre la arista del poligono o no.
+        if (orientation(polygon[i], p, polygon[next]) == COLLINEAL)
+            return inBounds(polygon[i], p, polygon[next]);
+
+      count++;
+    }
+    i = next;
+  } while (i != 0);
+    return count & 1;
 }
 
-void print(const vector<point> &p){
+void print(const vector<Point> &p){
     int n = (int)p.size();
     for(int i = 0; i < n; i++){
         cout << i+1 << ": " <<  p[i].x << ' ' << p[i].y << '\n';
