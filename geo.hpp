@@ -1,4 +1,6 @@
 /*Header con todas las funciones basicas de Geometria*/
+#ifndef GEO
+#define GEO
 #include <cmath>
 #include <vector>
 #include <iostream>
@@ -164,3 +166,4 @@ void print(const vector<Point> &p){
     }
     cout << "\n\n";
 }
+#endif
