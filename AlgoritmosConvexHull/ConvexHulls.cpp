@@ -19,7 +19,7 @@ vector<Point> randomPoints(int n){
 inline bool isConvex(vector<Point> &p){
     int n = sz(p);
     if (n < 3) return false; 
-    if (n == 3) return true;  // Si la cantidad de puntos es < 3 es un punto o una linea, si n = 3 es un triangulo.
+    if (n == 3) return true; 
     int dir = 0;
     
     for(int i = 0; i < n; i++){

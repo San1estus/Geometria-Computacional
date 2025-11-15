@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <algorithm>
-#include "../geo.h"
+#include "../geo.hpp"
 
 using namespace std;
 

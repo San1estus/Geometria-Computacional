@@ -81,6 +81,7 @@ Point operator/(Point p, double esc){
 bool operator<(Point p, Point q){
     return (p.x < q.x || (fabs((p.x - q.x)) < EPS && p.y < q.y));
 }
+
 double cross(Point p, Point q){
     return p.x*q.y-q.x*p.y;
 }
@@ -107,7 +108,6 @@ bool inBounds(Point p, Point q, Point r){
     return (r.x <= max(p.x, q.x) && r.x >= min(p.x, q.x) && r.y <= max(p.y, q.y) && r.y >= min(p.y, q.y));
 }
 
-
 bool intersect(Point p, Point q, Point r, Point l){
     int pqr = orientation(p, q, r);
     int pql = orientation(p, q, l);
@@ -133,8 +133,6 @@ double angle(Point p, Point q, Point r){
     if (cos_angle < -1.0) cos_angle = -1.0;
     return acos(cos_angle);
 }
-
-
 
 bool isPointInPolygon(Point p, const vector<Point>& polygon){
     int n = sz(polygon);
