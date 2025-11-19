@@ -53,7 +53,7 @@ struct AngularPoint {
 
 // Para el poligono de visibilidad de los guardias habia ciertos bugs, pero esto fue lo mejor que logre
 Point virtualGuard(int vertexIndex){
-    // El problema con esta parte es que la vista esta sesgada al triangulo donde esta contenido el vertice
+    // El problema con esta parte es que la vista esta sesgada al triangulo donde esta contenido el vertice.
     Vertex* v = dcel.vertices[vertexIndex];
     HalfEdge* e = v->incidentEdge;
 

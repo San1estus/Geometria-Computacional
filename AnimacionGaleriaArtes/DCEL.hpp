@@ -176,6 +176,7 @@ class DCEL
         cout << "No hay cara interna definida\n";
         return;
       }
+      
       vector<Vertex*> remainingVertices = vertices;
       // Usando alguna otra estructura el borrado podía ser más rápido, pero como manejamos pocos puntos no hay mucho problema.
 
