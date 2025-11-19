@@ -6,6 +6,7 @@
 #include <iostream>
 using namespace std;
 #define EPS 1e-9
+#define PI acos(-1)
 #define sz(a) (int)a.size()
 
 enum orientacion{
