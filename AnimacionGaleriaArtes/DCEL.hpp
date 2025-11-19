@@ -176,19 +176,20 @@ class DCEL
         cout << "No hay cara interna definida\n";
         return;
       }
-
+      vector<Vertex*> remainingVertices = vertices;
       // Se puede hacer mas eficiente esta parte si no borramos los vertices directamente.
       // Como los vertices originales estan en el programa principal lo manejo de esta forma.
-      while(vertices.size() > 3){
-        int m = (int)vertices.size();
+
+      while(remainingVertices.size() > 3){
+        int m = (int)remainingVertices.size();
         bool earFound = false;
         for(int i = 0; i < m; ++i){
-          if(!isEar(vertices, i)) continue;
+          if(!isEar(remainingVertices, i)) continue;
 
           // Oreja encontrada (i-1,i,i+)
-          Vertex* a = vertices[(i-1+m)%m];
-          Vertex* b = vertices[i];
-          Vertex* c = vertices[(i+1)%m];
+          Vertex* a = remainingVertices[(i-1+m)%m];
+          Vertex* b = remainingVertices[i];
+          Vertex* c = remainingVertices[(i+1)%m];
 
           // Inicialmente todos pertenecen a inner, por lo cual las buscamos ahi
           HalfEdge* e_ab = findHalfEdge(a->key, b->key, inner);
@@ -259,7 +260,7 @@ class DCEL
           if(c->incidentEdge == nullptr) c->incidentEdge = e_after;
 
           // Quitamos el vertices que no esta en la diagonal
-          vertices.erase(vertices.begin() + i);
+          remainingVertices.erase(remainingVertices.begin() + i);
 
           earFound = true;
           break;

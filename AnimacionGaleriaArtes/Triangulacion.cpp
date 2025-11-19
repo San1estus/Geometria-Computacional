@@ -16,9 +16,124 @@ vector<int> selectedGuards;
 int colorIndex = 0;
 bool colorFinished = 0;
 int selectedGuard = 0;
-
+// Para poligonos de visibilidad
+map<int, vector<Point>> visPolys;
 // La mera mera
 DCEL dcel;
+
+float getRaySegmentIntersection(Point p, Point r, Point a, Point b) {
+    Point s = b-a;
+    Point q_minus_p = a-p;
+
+    float r_cross_s = cross(r, s);
+
+    if (abs(r_cross_s) < 1e-5f) return -1.0f;
+
+    float t = cross(q_minus_p, s) / r_cross_s;
+    float u = cross(q_minus_p, r) / r_cross_s;
+
+    if (t > 1e-4f && u >= 0.0f && u <= 1.0f) {
+        return t;
+    }
+
+    return -1.0f;
+}
+
+struct AngularPoint {
+    Point p;
+    float angle;
+    float dist;
+
+    // Para ordenar por ángulo
+    bool operator<(const AngularPoint& other) const {
+        return angle < other.angle;
+    }
+};
+
+Point virtualGuard(int vertexIndex){
+    Vertex* v = dcel.vertices[vertexIndex];
+    HalfEdge* e = v->incidentEdge;
+
+    Vertex* v1 = e->origin;          // Este es el guardia
+    Vertex* v2 = e->next->origin;
+    Vertex* v3 = e->next->next->origin;
+
+    // Calculamos el centroide de este triángulo pequeño
+    float centroidX = (v1->x + v2->x + v3->x) / 3.0f;
+    float centroidY = (v1->y + v2->y + v3->y) / 3.0f;
+
+    // --- AQUI ESTA LA MAGIA ---
+    // Creamos un vector dirección: Vértice -> Centroide
+    float dirX = centroidX - v1->x;
+    float dirY = centroidY - v1->y;
+
+    // Factor de desplazamiento pequeño (ej. 1% de la distancia al centro)
+    // Esto despega al guardia de la pared lo suficiente para que las matemáticas no fallen,
+    // pero visualmente es imperceptible para el polígono resultante.
+    float epsilonFactor = 0.01f; 
+
+    return Point(v1->x + dirX * epsilonFactor, v1->y + dirY * epsilonFactor);
+}
+
+vector<Point> visibilityPolygon(Point p) {
+    vector<AngularPoint> detectedPoints;
+    int n = vertices.size();
+
+    // Algoritmo:
+    // 1. Para cada vértice v del polígono (el posible destino del rayo)
+    for (int i = 0; i < n; ++i) {
+        Point v = vertices[i];
+        
+        // Definir dirección del rayo (r) y distancia máxima inicial (al vértice objetivo)
+        Point r = v-p;
+        
+        // Angulo theta (para ordenar después)
+        float theta = atan2(r.y, r.x);
+        
+        // Distancia inicial asumiendo que el vértice v es visible
+        float maxDist = sqrt(r.x*r.x + r.y*r.y);
+        float minT = 1.0f; // t=1 significa que llegamos exactamente al vértice v (p + 1*r = v)
+
+        // 2. Verificar intersección con TODOS los obstáculos (aristas del polígono)
+        for (int j = 0; j < n; ++j) {
+            Point edgeStart = vertices[j];
+            Point edgeEnd = vertices[(j + 1) % n];
+
+            float t = getRaySegmentIntersection(p, r, edgeStart, edgeEnd);
+
+            // Si hay intersección y es más cercana que la actual
+            if (t != -1.0f) {
+                if (t < minT) {
+                    minT = t;
+                }
+            }
+        }
+
+        // Calculamos el punto final real de visibilidad
+        Point result;
+        result.x = p.x + r.x * minT;
+        result.y = p.y + r.y * minT;
+
+        detectedPoints.push_back({result, theta, maxDist * minT});
+    }
+
+    // 3. Ordenar por ángulo para poder dibujarlo como un TRIANGLE_FAN
+    sort(detectedPoints.begin(), detectedPoints.end());
+
+    // Convertir de regreso a vector<Point>
+    vector<Point> resultPoly;
+    for (const auto& ap : detectedPoints) {
+        resultPoly.push_back(ap.p);
+    }
+    
+    // Cerramos el ciclo repitiendo el primer punto si es necesario para GL_LINE_STRIP,
+    // aunque para GL_TRIANGLE_FAN no es estrictamente necesario.
+    if (!resultPoly.empty()) {
+        resultPoly.push_back(resultPoly[0]);
+    }
+
+    return resultPoly;
+}
 
 // Para dibujar puntos
 void mouseCallback(GLFWwindow* window, int button, int action, int mods){
@@ -67,6 +182,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                 diags.clear();
                 selectedGuards.clear();
                 colorVertices.clear();
+                visPolys.clear();
                 finished = false;
                 colorFinished = false;
                 diagIndex = 0;
@@ -114,6 +230,9 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                 break;    
             case GLFW_KEY_V:
                 if(!selectedGuards.empty()){
+                    if(visPolys.find(selectedGuard) == visPolys.end()){
+                        visPolys[selectedGuard] = visibilityPolygon(virtualGuard(selectedGuards[selectedGuard]));
+                    }
                     selectedGuard = (selectedGuard+1)%selectedGuards.size();
                 }
                 break;
@@ -150,8 +269,23 @@ void drawLine(Point a, Point b, float r, float g, float bl, float width = 3.0f) 
     glEnd();
 }
 
+
+
 void render() {
     glClear(GL_COLOR_BUFFER_BIT);
+
+    if(visPolys.size() != 0){
+        for(int i = 0; i < visPolys.size(); i++){
+            glColor4f(1.0f, 1.0f, 0.0f, 0.5f); 
+            glBegin(GL_TRIANGLE_FAN);
+            glVertex2f(vertices[selectedGuards[i]].x, vertices[selectedGuards[i]].y);
+            for(auto& p : visPolys[i]){
+                glVertex2f(p.x, p.y);
+            }
+            glEnd();
+        }
+    }
+    
     for (auto& p : vertices) drawPoint(p, 1, 0, 0);
     if (vertices.size() > 1) {
         glColor3f(1, 1, 1);
@@ -180,10 +314,8 @@ void render() {
             drawPoint({vertices[g].x, vertices[g].y}, 0, 1, 0);
         }
     }
+    
 }
-
-
-
 
 // ---------------------------- IMPORTANTISISISISIMO ---------------------------- //
 // Los vertices tienen que estar dados en sentido antihorario o no va a funcionar la triangulacion
