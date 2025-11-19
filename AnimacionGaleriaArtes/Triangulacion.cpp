@@ -39,6 +39,7 @@ float getRaySegmentIntersection(Point p, Point r, Point a, Point b) {
     return -1.0f;
 }
 
+// Esta estructura es solo para facilitar la ordenacion
 struct AngularPoint {
     Point p;
     float angle;
@@ -50,27 +51,23 @@ struct AngularPoint {
     }
 };
 
+// Para el poligono de visibilidad de los guardias habia ciertos bugs, pero esto fue lo mejor que logre
 Point virtualGuard(int vertexIndex){
+    // El problema con esta parte es que la vista esta sesgada al triangulo donde esta contenido el vertice
     Vertex* v = dcel.vertices[vertexIndex];
     HalfEdge* e = v->incidentEdge;
 
-    Vertex* v1 = e->origin;          // Este es el guardia
+    Vertex* v1 = e->origin;         
     Vertex* v2 = e->next->origin;
     Vertex* v3 = e->next->next->origin;
 
-    // Calculamos el centroide de este triángulo pequeño
     float centroidX = (v1->x + v2->x + v3->x) / 3.0f;
     float centroidY = (v1->y + v2->y + v3->y) / 3.0f;
 
-    // --- AQUI ESTA LA MAGIA ---
-    // Creamos un vector dirección: Vértice -> Centroide
     float dirX = centroidX - v1->x;
     float dirY = centroidY - v1->y;
 
-    // Factor de desplazamiento pequeño (ej. 1% de la distancia al centro)
-    // Esto despega al guardia de la pared lo suficiente para que las matemáticas no fallen,
-    // pero visualmente es imperceptible para el polígono resultante.
-    float epsilonFactor = 0.01f; 
+    float epsilonFactor = 0.3f; 
 
     return Point(v1->x + dirX * epsilonFactor, v1->y + dirY * epsilonFactor);
 }
@@ -79,29 +76,23 @@ vector<Point> visibilityPolygon(Point p) {
     vector<AngularPoint> detectedPoints;
     int n = vertices.size();
 
-    // Algoritmo:
-    // 1. Para cada vértice v del polígono (el posible destino del rayo)
+    // El algorimo es lanzar rayos a todos los vertices, si se detecta interseccion se considera ese punto
     for (int i = 0; i < n; ++i) {
         Point v = vertices[i];
         
-        // Definir dirección del rayo (r) y distancia máxima inicial (al vértice objetivo)
         Point r = v-p;
         
-        // Angulo theta (para ordenar después)
         float theta = atan2(r.y, r.x);
         
-        // Distancia inicial asumiendo que el vértice v es visible
         float maxDist = sqrt(r.x*r.x + r.y*r.y);
-        float minT = 1.0f; // t=1 significa que llegamos exactamente al vértice v (p + 1*r = v)
+        float minT = 1.0f; 
 
-        // 2. Verificar intersección con TODOS los obstáculos (aristas del polígono)
         for (int j = 0; j < n; ++j) {
             Point edgeStart = vertices[j];
             Point edgeEnd = vertices[(j + 1) % n];
 
             float t = getRaySegmentIntersection(p, r, edgeStart, edgeEnd);
 
-            // Si hay intersección y es más cercana que la actual
             if (t != -1.0f) {
                 if (t < minT) {
                     minT = t;
@@ -109,7 +100,6 @@ vector<Point> visibilityPolygon(Point p) {
             }
         }
 
-        // Calculamos el punto final real de visibilidad
         Point result;
         result.x = p.x + r.x * minT;
         result.y = p.y + r.y * minT;
@@ -117,17 +107,14 @@ vector<Point> visibilityPolygon(Point p) {
         detectedPoints.push_back({result, theta, maxDist * minT});
     }
 
-    // 3. Ordenar por ángulo para poder dibujarlo como un TRIANGLE_FAN
+    // Lo ordenamos para aprovechar Legacy OpenGL, pero aun así hay problemillas
     sort(detectedPoints.begin(), detectedPoints.end());
 
-    // Convertir de regreso a vector<Point>
     vector<Point> resultPoly;
     for (const auto& ap : detectedPoints) {
         resultPoly.push_back(ap.p);
     }
     
-    // Cerramos el ciclo repitiendo el primer punto si es necesario para GL_LINE_STRIP,
-    // aunque para GL_TRIANGLE_FAN no es estrictamente necesario.
     if (!resultPoly.empty()) {
         resultPoly.push_back(resultPoly[0]);
     }

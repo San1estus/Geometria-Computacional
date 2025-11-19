@@ -177,8 +177,7 @@ class DCEL
         return;
       }
       vector<Vertex*> remainingVertices = vertices;
-      // Se puede hacer mas eficiente esta parte si no borramos los vertices directamente.
-      // Como los vertices originales estan en el programa principal lo manejo de esta forma.
+      // Usando alguna otra estructura el borrado podía ser más rápido, pero como manejamos pocos puntos no hay mucho problema.
 
       while(remainingVertices.size() > 3){
         int m = (int)remainingVertices.size();
@@ -203,9 +202,8 @@ class DCEL
             return;
           }
 
-          // Crear diagonal: d = c->a (pertenece al triángulo), dt = a->c (pertenece a la cara restante)
-          HalfEdge* d  = new HalfEdge(c, a); // c->a
-          HalfEdge* dt = new HalfEdge(a, c); // a->c
+          HalfEdge* d  = new HalfEdge(c, a); 
+          HalfEdge* dt = new HalfEdge(a, c); 
           diags.push_back({c->key, a->key});
 
           int baseKey = (int)halfEdges.size();
@@ -217,12 +215,9 @@ class DCEL
           halfEdges.push_back(d);
           halfEdges.push_back(dt);
 
-          // Crear nueva cara para el triangulo
           Face* tri = new Face((int)faces.size());
           faces.push_back(tri);
 
-          // Ajustes para la cara triangular (a,b,c) : ciclo a->b, b->c, c->a 
-          // e_ab (a->b) , e_bc (b->c) , d (c->a)
           e_ab->next = e_bc;
           e_bc->prev = e_ab;
 
@@ -232,34 +227,27 @@ class DCEL
           d->next = e_ab;
           e_ab->prev = d;
 
-          // Asignar incidentFace del triángulo
           e_ab->incidentFace = tri;
           e_bc->incidentFace = tri;
           d->incidentFace = tri;
           tri->incidentEdge = e_ab;
 
-          // Ajustes para la cara restante (inner) : quitamos b y conectamos a->c (dt)
-          // e_before -> dt -> e_after
           e_before->next = dt;
           dt->prev = e_before;
 
           dt->next = e_after;
           e_after->prev = dt;
           
-          // dt pertenece a la cara restante (inner)
           dt->incidentFace = inner;
 
-          // Mantener inner->incidentEdge apuntando a una arista válida del ciclo restante
           inner->incidentEdge = e_after;
 
-          // Actualizar incidentEdge de vértices a y c si apuntaban a aristas 'eliminadas'
           a->incidentEdge = findHalfEdge(a->key, dt->end_v, inner); 
           if(a->incidentEdge == nullptr) a->incidentEdge = dt;
 
           c->incidentEdge = findHalfEdge(c->key, e_after->end_v, inner);
           if(c->incidentEdge == nullptr) c->incidentEdge = e_after;
 
-          // Quitamos el vertices que no esta en la diagonal
           remainingVertices.erase(remainingVertices.begin() + i);
 
           earFound = true;
