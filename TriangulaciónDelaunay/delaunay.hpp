@@ -1,7 +1,6 @@
 #ifndef DELAUNAY
 #define DELAUNAY
 
-#include "../geo.hpp"
 #include <algorithm>
 #include <vector>
 #include <memory>
@@ -20,10 +19,6 @@ struct Point3 {
   double x, y, z;
   Point3() : x(0), y(0), z(0) {}
   Point3(double x0, double y0, double z0) : x(x0), y(y0), z(z0) {}
-  Point3(Point p) : x(p.x), y(p.y), z(p.y) {}  // Note: z = y para 2D
-  
-  operator Point() const { return Point(x, z); }
-  Point toPoint2D() const { return Point(x, z); }
 };
 
 inline double dist2(double ax, double ay, double bx, double by) {
