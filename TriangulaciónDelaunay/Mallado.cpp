@@ -1,12 +1,30 @@
 #include "delaunay.hpp"
 #include <iostream>
+#include <fstream>
+#include <sstream>
+
+vector<Point3> readInput(const string& filename){
+	vector<Point3> points;
+	ifstream file(filename);
+	if(!file.is_open()){
+		throw runtime_error("No se encontro el archivo.");
+	}
+
+	string line;
+	while(getline(file, line)){
+		stringstream ss(line);
+		double x, y, z;
+		if(!(ss >> x >> y >> z)){
+			continue;
+		}
+		points.push_back({x,y,z});
+	}
+	return points;
+}
+
 
 int main(){
-	vector<Point> points;
-	points.push_back({-1, 1});
-	points.push_back({1, 1});
-	points.push_back({1, -1});
-	points.push_back({-1, -1});
+	vector<Point3> points = readInput("input.txt");
 
 	Delaunay d(points);
 	cout << d.triangles.size() << '\n';
