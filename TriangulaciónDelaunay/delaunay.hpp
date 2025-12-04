@@ -9,449 +9,485 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <iostream>
 
 #define INVALID std::numeric_limits<unsigned int>::max()
+#define EPSILON 1e-9  // Usando la misma EPS que en geo.hpp
 
 using namespace std;
-struct Point3{
-	double x, y, z;
-	Point3(Point p) : x(p.x), y(p.y), z(0) {}
-	Point3(double x0, double y0, double z0) : x(x0), y(y0), z(z0){}
+
+struct Point3 {
+  double x, y, z;
+  Point3() : x(0), y(0), z(0) {}
+  Point3(double x0, double y0, double z0) : x(x0), y(y0), z(z0) {}
+  Point3(Point p) : x(p.x), y(p.y), z(p.y) {}  // Note: z = y para 2D
+  
+  operator Point() const { return Point(x, z); }
+  Point toPoint2D() const { return Point(x, z); }
 };
 
-// Calcula el cuadrado del radio de la circunferencia circunscrita
-double circumRadius(const Point p, const Point q, const Point r){
-  Point n = q - p;
-  Point l = r - p;
-
-  double a = dot(n, n);
-  double b = dot(l, l);
-  double c = cross(n, l);
-
-  // Si c es cero, los puntos son colineales y el radio es infinito
-  if(c == 0) return numeric_limits<double>::max();
-
-  double x = (l.y * a - n.y * b) * 0.5 / c;
-  double y = (n.x * b - l.x * a) * 0.5 / c;
-
-  return x*x + y*y;
+inline double dist2(double ax, double ay, double bx, double by) {
+  double dx = ax - bx;
+  double dy = ay - by;
+  return dx * dx + dy * dy;
 }
 
-Point circumCenter(const Point p, const Point q, const Point r){
-  Point n = q - p;
-  Point l = r - p;
-
-  double a = dot(n, n);
-  double b = dot(l, l);
-  double c = cross(n, l);
-
-  // x e y son las coordenadas absolutas del circuncentro 
-  double x = p.x + (l.y * a - n.y * b) * 0.5 / c;
-  double y = p.y + (n.x * b - l.x * a) * 0.5 / c;
-
-  return Point(x, y);
+inline double circumradius(double ax, double ay, double bx, double by, double cx, double cy) {
+  double dx = bx - ax;
+  double dy = by - ay;
+  double ex = cx - ax;
+  double ey = cy - ay;
+  
+  double bl = dx * dx + dy * dy;
+  double cl = ex * ex + ey * ey;
+  double d = dx * ey - dy * ex;
+  
+  if (fabs(d) < EPSILON) {
+    return std::numeric_limits<double>::max();
+  }
+  
+  double x = (ey * bl - dy * cl) * 0.5 / d;
+  double y = (dx * cl - ex * bl) * 0.5 / d;
+  
+  return x * x + y * y;
 }
 
-// Regresa true si el punto p está DENTRO del circuncírculo de (a, b, c).
-bool inCircle(const Point a, const Point b, const Point c, const Point p){
-  Point d = a - p;
-  Point e = b - p;
-  Point f = c - p;
-
-  double ap = dot(d, d);
-  double bp = dot(e, e);
-  double cp = dot(f, f);
-
-  double det = d.x * (e.y * cp - bp * f.y) - 
-               d.y * (e.x * cp - bp * f.x) + 
-               ap * (e.x * f.y - e.y * f.x);
-
-  return det < 0.0;
+inline bool orient(double px, double py, double qx, double qy, double rx, double ry) {
+  return (qy - py) * (rx - qx) - (qx - px) * (ry - qy) < EPSILON;
 }
 
-// Comparador para ordenar los puntos por distancia al circuncentro
+inline bool in_circle(double ax, double ay, double bx, double by,
+                     double cx, double cy, double px, double py) {
+  double dx = ax - px;
+  double dy = ay - py;
+  double ex = bx - px;
+  double ey = by - py;
+  double fx = cx - px;
+  double fy = cy - py;
+  
+  double ap = dx * dx + dy * dy;
+  double bp = ex * ex + ey * ey;
+  double cp = fx * fx + fy * fy;
+  
+  return (dx * (ey * cp - bp * fy) -
+         dy * (ex * cp - bp * fx) +
+         ap * (ex * fy - ey * fx)) < 0.0;
+}
+
+inline bool check_pts_equal(double x1, double y1, double x2, double y2) {
+  return fabs(x1 - x2) <= EPSILON && fabs(y1 - y2) <= EPSILON;
+}
+
+inline double pseudo_angle(double dx, double dy) {
+  double p = dx / (fabs(dx) + fabs(dy));
+  return (dy > 0.0 ? 3.0 - p : 1.0 + p) / 4.0;
+}
+
+inline unsigned int fast_mod(unsigned int i, unsigned int c) {
+  return i >= c ? i % c : i;
+}
+
 struct compare {
-  vector<Point3> const& points;
-  Point center;
-
-  bool operator()(unsigned int i, unsigned int j){
-		Point p1 = {points[i].x, points[i].z};
-		Point p2 = {points[j].x, points[j].z};
-    double d1 = dist(p1, center);
-    double d2 = dist(p2, center);
-    double diffDist = d1 - d2;
-
-    if(std::abs(diffDist) > 1e-9){ 
+  const vector<Point3>& points;
+  double cx, cy;
+  
+  compare(const vector<Point3>& p, double center_x, double center_y) 
+    : points(p), cx(center_x), cy(center_y) {}
+  
+  bool operator()(unsigned int i, unsigned int j) const {
+    double d1 = dist2(points[i].x, points[i].z, cx, cy);
+    double d2 = dist2(points[j].x, points[j].z, cx, cy);
+    
+    if (fabs(d1 - d2) > EPSILON) {
       return d1 < d2;
     }
     
-    Point diffCoords = p1-p2;
-    if (diffCoords.x != 0.0){
-      return diffCoords.x < 0.0; // Desempate por coordenada X
-    } else{
-      return diffCoords.y < 0.0; // Desempate por coordenada Y
+    double diff_x = points[i].x - points[j].x;
+    if (fabs(diff_x) > EPSILON) {
+      return diff_x < 0.0;
     }
+    
+    return points[i].z < points[j].z;
   }
 };
-
-// Función para calcular un pseudo-ángulo (monótona, evita trigonometría costosa)
-double pseudoAngle(Point p){
-  // Usamos std::abs para asegurar que funcione correctamente con doubles.
-  double aux = p.x / (std::abs(p.x) + std::abs(p.y));
-  return (p.y > 0.0 ? 3.0 - aux : 1.0 + aux) / 4.0;
-}
-
-unsigned int fast_mod(const unsigned int i, const unsigned int j){
-  return i >= j ? i % j : i; 
-}
 
 class Delaunay {
 public:
-  vector<Point3> const& points;
+  const vector<Point3>& points;
   vector<unsigned int> triangles;
-  vector<unsigned int> halfEdges;
-  vector<unsigned int> hullPrev;
-  vector<unsigned int> hullNext;
-  vector<unsigned int> hullTri;
-  unsigned int hullStart;
-
-  Delaunay(vector<Point3> const& input);
-  double getHullArea();
-
+  vector<unsigned int> halfedges;
+  vector<unsigned int> hull_prev;
+  vector<unsigned int> hull_next;
+  vector<unsigned int> hull_tri;
+  unsigned int hull_start;
+  
+  Delaunay(const vector<Point3>& input);
+  double get_hull_area();
+  
 private:
-  vector<unsigned int> hullHash;
-  Point circumCenterPoint;
-  unsigned int hashSize;
-  vector<unsigned int> illegalEdgesStack;
-
+  vector<unsigned int> m_hash;
+  double m_center_x, m_center_y;
+  unsigned int m_hash_size;
+  vector<unsigned int> m_edge_stack;
+  
   unsigned int legalize(unsigned int a);
-  unsigned int hashKey(Point p) const;
-  unsigned int addTriangle(unsigned int i0, unsigned int i1, unsigned int i2, unsigned int a, unsigned int b, unsigned int c);
+  unsigned int hash_key(double x, double y) const;
+  unsigned int add_triangle(unsigned int i0, unsigned int i1, unsigned int i2,
+                           unsigned int a, unsigned int b, unsigned int c);
   void link(unsigned int a, unsigned int b);
 };
 
-Delaunay::Delaunay(vector<Point3> const& input) : points(input) {
+Delaunay::Delaunay(const vector<Point3>& input) 
+  : points(input), hull_start(0) {
+  
   unsigned int n = points.size();
-  if(n < 3) return;
-
+  if (n < 3) return;
+  
+  double min_x = numeric_limits<double>::max();
+  double min_y = numeric_limits<double>::max();
+  double max_x = numeric_limits<double>::lowest();
+  double max_y = numeric_limits<double>::lowest();
+  
   vector<unsigned int> ids;
   ids.reserve(n);
-  Point maxPoint(numeric_limits<double>::min(), numeric_limits<double>::min());
-  Point minPoint(numeric_limits<double>::max(), numeric_limits<double>::max());
-
-  // Encontrar la Bounding Box
-  for(unsigned int i = 0; i < n; i++){
-    if(points[i].x < minPoint.x) minPoint.x = points[i].x;
-    if(points[i].z < minPoint.y) minPoint.y = points[i].z;
-    if(points[i].x > maxPoint.x) maxPoint.x = points[i].x;
-    if(points[i].z > maxPoint.y) maxPoint.y = points[i].z;
+  
+  for (unsigned int i = 0; i < n; i++) {
+    double x = points[i].x;
+    double y = points[i].z;  // Usar z como coordenada y 2D
+    
+    if (x < min_x) min_x = x;
+    if (y < min_y) min_y = y;
+    if (x > max_x) max_x = x;
+    if (y > max_y) max_y = y;
+    
     ids.push_back(i);
   }
-
-  // Calcular el centroide de la caja
-  Point centroid((minPoint + maxPoint) / 2.0);
   
-  // Selección del triángulo inicial
+  double cx = (min_x + max_x) / 2.0;
+  double cy = (min_y + max_y) / 2.0;
+  
   unsigned int i0 = INVALID;
-  double minDist = numeric_limits<double>::max();
-  // i0: punto más cercano al centroide
-  for(unsigned int i = 0; i < n; i++){
-		Point p = {points[i].x, points[i].z};
-    double d = dist(centroid, p);
-    if(d < minDist){
-      i0 = i;
-      minDist = d;
-    }
-  }
-
-  Point p0 = {points[i0].x, points[i0].y};
-
-  unsigned int i1 = INVALID;
-  minDist = numeric_limits<double>::max();
-  // i1: punto más cercano a i0
-  for(unsigned int i = 0; i < n; i++){
-    if(i == i0) continue;
-		Point p = {points[i].x, points[i].z};
-    double d = dist(p0, p);
-    if(d < minDist){
-      i1 = i;
-      minDist = d;
-    }
-  }
-  Point p1 = {points[i1].x, points[i1].y};
-
-  unsigned int i2 = INVALID;
-  double minRadius = numeric_limits<double>::max();
-  // i2 es el punto que forma el circuncírculo más pequeño con p0 y p1
-  for(unsigned int i = 0; i < n; i++){
-    if(i == i0 || i == i1) continue;
-		Point p = {points[i].x, points[i].z};
-    double r = circumRadius(p0, p1, p);
-    if(r < minRadius){
-      i2 = i;
-      minRadius = r;
-    }
-  }
-  Point p2 = {points[i2].x, points[i2].y};
-
-  // Asegurar que el triángulo inicial (i0, i1, i2) esté en orden horario (CW)
-  if(orientation(p0, p1, p2) == LEFT){
-    swap(i1, i2);
-    swap(p1, p2);
-  }
-
-  // Almacenar el circuncentro para el hashing y la ordenación
-  circumCenterPoint = circumCenter(p0, p1, p2);
-
-  // Ordenar los puntos por distancia al circuncentro
-  sort(ids.begin(), ids.end(), compare{points, circumCenterPoint});
-
-  // Inicializar estructuras del Convex Hull
-  hashSize = static_cast<unsigned int>(llround(ceil(sqrt(n))));
-  hullHash.resize(hashSize);
-  fill(hullHash.begin(), hullHash.end(), INVALID);
-
-  hullPrev.resize(n);
-  hullNext.resize(n);
-  hullTri.resize(n);
-
-  hullStart = i0;
+  double min_dist = numeric_limits<double>::max();
   
-  // Establecer el triángulo inicial como la envolvente convexa inicial
-  hullNext[i0] = hullPrev[i2] = i1;
-  hullNext[i1] = hullPrev[i0] = i2;
-  hullNext[i2] = hullPrev[i1] = i0;
-
-  // hullTri apunta a la media-arista opuesta a cada vértice
-  hullTri[i0] = 0;
-  hullTri[i1] = 1;
-  hullTri[i2] = 2;
-
-  // Almacenar los vértices del hull inicial en la tabla hash para búsqueda
-  hullHash[hashKey({points[i0].x, points[i0].y})] = i0;
-  hullHash[hashKey({points[i1].x, points[i1].y})] = i1;
-  hullHash[hashKey({points[i2].x, points[i2].y})] = i2;
-
-  unsigned int maxTriangles = 2 * n - 5;
-  triangles.reserve(maxTriangles * 3);
-  halfEdges.reserve(maxTriangles * 3);
-  addTriangle(i0, i1, i2, INVALID, INVALID, INVALID);
-
-  Point temp(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN());
-
-  // Bucle principal de inserción incremental
-  for(unsigned int k = 0; k < n; k++){
-    unsigned int i = ids[k];
-    Point p = {points[i].x, points[i].z};
-
-    // Saltar puntos cercanos y el triangulo inicial
-    if(k > 0 && abs(p.x - temp.x) <= numeric_limits<double>::epsilon() && abs(p.y - temp.y) <= numeric_limits<double>::epsilon()) continue;
-    temp = p;
-    
-    if(i == i0 || i == i1 || i == i2) continue;
-
-    // Localización del borde visible usando hash table y walking search
-    unsigned int start = 0;
-    unsigned int key = hashKey(p);
-    for(unsigned int j = 0; j < hashSize; j++){
-      start = hullHash[fast_mod(key + j, hashSize)];
-      if(start != INVALID && start != hullNext[start]) break;
+  for (unsigned int i = 0; i < n; i++) {
+    double d = dist2(points[i].x, points[i].z, cx, cy);
+    if (d < min_dist) {
+      i0 = i;
+      min_dist = d;
     }
-
-    start = hullPrev[start];
+  }
+  
+  double i0x = points[i0].x;
+  double i0y = points[i0].z;
+  
+  unsigned int i1 = INVALID;
+  min_dist = numeric_limits<double>::max();
+  
+  for (unsigned int i = 0; i < n; i++) {
+    if (i == i0) continue;
+    double d = dist2(i0x, i0y, points[i].x, points[i].z);
+    if (d < min_dist && d > EPSILON) {  // Evitar puntos coincidentes
+      i1 = i;
+      min_dist = d;
+    }
+  }
+  
+  if (i1 == INVALID) {
+    throw runtime_error("Puntos colineales o coincidentes");
+  }
+  
+  double i1x = points[i1].x;
+  double i1y = points[i1].z;
+  
+  unsigned int i2 = INVALID;
+  double min_radius = numeric_limits<double>::max();
+  
+  for (unsigned int i = 0; i < n; i++) {
+    if (i == i0 || i == i1) continue;
+    double r = circumradius(i0x, i0y, i1x, i1y, points[i].x, points[i].z);
+    if (r < min_radius) {
+      i2 = i;
+      min_radius = r;
+    }
+  }
+  
+  if (min_radius == numeric_limits<double>::max()) {
+    throw runtime_error("No se puede crear triangulación");
+  }
+  
+  double i2x = points[i2].x;
+  double i2y = points[i2].z;
+  
+  // Asegurar orientación CCW
+  if (!orient(i0x, i0y, i1x, i1y, i2x, i2y)) {
+    swap(i1, i2);
+    swap(i1x, i2x);
+    swap(i1y, i2y);
+  }
+  
+  double dx = i1x - i0x;
+  double dy = i1y - i0y;
+  double ex = i2x - i0x;
+  double ey = i2y - i0y;
+  double bl = dx * dx + dy * dy;
+  double cl = ex * ex + ey * ey;
+  double d = dx * ey - dy * ex;
+  
+  m_center_x = i0x + (ey * bl - dy * cl) * 0.5 / d;
+  m_center_y = i0y + (dx * cl - ex * bl) * 0.5 / d;
+  
+  sort(ids.begin(), ids.end(), compare(points, m_center_x, m_center_y));
+  
+  m_hash_size = static_cast<unsigned int>(ceil(sqrt(n)));
+  m_hash.resize(m_hash_size, INVALID);
+  
+  hull_prev.resize(n, INVALID);
+  hull_next.resize(n, INVALID);
+  hull_tri.resize(n, INVALID);
+  
+  hull_start = i0;
+  
+  hull_next[i0] = i1;
+  hull_prev[i2] = i1;
+  hull_next[i1] = i2;
+  hull_prev[i0] = i2;
+  hull_next[i2] = i0;
+  hull_prev[i1] = i0;
+  
+  hull_tri[i0] = 0;
+  hull_tri[i1] = 1;
+  hull_tri[i2] = 2;
+  
+  m_hash[hash_key(i0x, i0y)] = i0;
+  m_hash[hash_key(i1x, i1y)] = i1;
+  m_hash[hash_key(i2x, i2y)] = i2;
+  
+  unsigned int max_triangles = n < 3 ? 1 : 2 * n - 5;
+  triangles.reserve(max_triangles * 3);
+  halfedges.reserve(max_triangles * 3);
+  
+  add_triangle(i0, i1, i2, INVALID, INVALID, INVALID);
+  
+  double xp = numeric_limits<double>::quiet_NaN();
+  double yp = numeric_limits<double>::quiet_NaN();
+  
+  for (unsigned int k = 0; k < n; k++) {
+    unsigned int i = ids[k];
+    double x = points[i].x;
+    double y = points[i].z;
+    
+    // Saltar puntos duplicados
+    if (k > 0 && check_pts_equal(x, y, xp, yp)) {
+      continue;
+    }
+    xp = x;
+    yp = y;
+    
+    // Saltar puntos del triángulo inicial
+    if (i == i0 || i == i1 || i == i2) continue;
+    
+    unsigned int start = 0;
+    unsigned int key = hash_key(x, y);
+    
+    for (unsigned int j = 0; j < m_hash_size; j++) {
+      start = m_hash[fast_mod(key + j, m_hash_size)];
+      if (start != INVALID && start != hull_next[start]) break;
+    }
+    
+    start = hull_prev[start];
     unsigned int e = start;
     unsigned int q;
-
-    // Caminar hacia adelante hasta encontrar un borde
-    while(q = hullNext[e], (orientation(p, {points[e].x, points[e].z}, {points[q].x, points[q].z}) != LEFT)){
+    
+    while (true) {
+      q = hull_next[e];
+      if (orient(x, y, points[e].x, points[e].z, points[q].x, points[q].z)) {
+        break;
+      }
       e = q;
-      if(e == start){
-        e = INVALID; // Punto interior o duplicado
+      if (e == start) {
+        e = INVALID;
         break;
       }
     }
-
-    if(e == INVALID) continue;
-
-    // Inserción del nuevo punto 'p'
-    // Añadir el primer triángulo (e, i, hullNext[e])
-    unsigned int t = addTriangle(e, i, hullNext[e], INVALID, INVALID, hullTri[e]);
-    hullTri[i] = legalize(t + 2);
-    hullTri[e] = t;
     
-    unsigned int next = hullNext[e];
-    // Caminar hacia adelante: añadir nuevos triángulos y legalizar
-    while (q = hullNext[next], orientation(p, {points[next].x, points[next].z}, {points[q].x, points[q].z}) == LEFT){
-      // Conexión crítica: se conecta con el triángulo vecino 'hullTri[next]'
-      t = addTriangle(next, i, q, hullTri[i], INVALID, hullTri[next]);
-      hullTri[i] = legalize(t + 2);
-      hullNext[next] = next;
+    if (e == INVALID) continue;
+    
+    unsigned int t = add_triangle(e, i, hull_next[e], 
+                                 INVALID, INVALID, hull_tri[e]);
+    
+    hull_tri[i] = legalize(t + 2);
+    hull_tri[e] = t;
+    
+    unsigned int next = hull_next[e];
+    while (true) {
+      q = hull_next[next];
+      if (!orient(x, y, points[next].x, points[next].z, points[q].x, points[q].z)) {
+        break;
+      }
+      t = add_triangle(next, i, q, hull_tri[i], INVALID, hull_tri[next]);
+      hull_tri[i] = legalize(t + 2);
+      hull_next[next] = next;
       next = q;
     }
-
-    // Caminar hacia atrás: añadir nuevos triángulos y legalizar
-    if(e == start){
-      while(q = hullPrev[e], orientation(p, {points[q].x, points[q].z}, {points[e].x, points[e].z}) == LEFT){
-        t = addTriangle(q, i, e, INVALID, hullTri[e], hullTri[q]);
+    
+    if (e == start) {
+      while (true) {
+        q = hull_prev[e];
+        if (!orient(x, y, points[q].x, points[q].z, points[e].x, points[e].z)) {
+          break;
+        }
+        t = add_triangle(q, i, e, INVALID, hull_tri[e], hull_tri[q]);
         legalize(t + 2);
-        hullTri[q] = t;
-        hullNext[e] = e; 
+        hull_tri[q] = t;
+        hull_next[e] = e;
         e = q;
       }
     }
-
-    // Actualizar la envolvente convexa
-    hullPrev[i] = e;
-    hullStart = e;
-    hullPrev[next] = i;
-    hullNext[e] = i;
-    hullNext[i] = next;
-
-    hullHash[hashKey(p)] = i;
-    hullHash[hashKey({points[e].x, points[e].z})] = e;
+    
+    hull_prev[i] = e;
+    hull_start = e;
+    hull_prev[next] = i;
+    hull_next[e] = i;
+    hull_next[i] = next;
+    
+    m_hash[hash_key(x, y)] = i;
+    m_hash[hash_key(points[e].x, points[e].z)] = e;
   }
 }
 
-double Delaunay::getHullArea(){
-  vector<double> hullArea;
-  unsigned int e = hullStart;
-  do {
-    hullArea.push_back((points[e].x - points[hullPrev[e]].x) * (points[e].z + points[hullPrev[e]].y));
-    e = hullNext[e]; 
-  } while(e != hullStart);
+double Delaunay::get_hull_area() {
+  vector<double> hull_area;
+  unsigned int e = hull_start;
   
-  double sum = 0;
-  for(double v : hullArea) sum += v; 
-  return sum;
+  do {
+    double area = (points[e].x - points[hull_prev[e]].x) * 
+                 (points[e].z + points[hull_prev[e]].z);
+    hull_area.push_back(area);
+    e = hull_next[e];
+  } while (e != hull_start);
+  
+  double sum = 0.0;
+  for (double val : hull_area) sum += val;
+  return fabs(sum) * 0.5;  // Área del polígono
 }
 
-// Legalización de aristas
-unsigned int Delaunay::legalize(unsigned int a){
+unsigned int Delaunay::legalize(unsigned int a) {
   unsigned int i = 0;
   unsigned int ar = 0;
-  illegalEdgesStack.clear();
-
-  while(true){
-    unsigned int b = halfEdges[a];
-
+  m_edge_stack.clear();
+  
+  while (true) {
+    unsigned int b = halfedges[a];
+    
     unsigned int a0 = 3 * (a / 3);
     ar = a0 + (a + 2) % 3;
-
-    if(b == INVALID){
-      if(i > 0){
+    
+    if (b == INVALID) {
+      if (i > 0) {
         i--;
-        a = illegalEdgesStack[i];
+        a = m_edge_stack[i];
         continue;
       } else {
         break;
       }
     }
-
+    
     unsigned int b0 = 3 * (b / 3);
     unsigned int al = a0 + (a + 1) % 3;
     unsigned int bl = b0 + (b + 2) % 3;
-
+    
     unsigned int p0 = triangles[ar];
     unsigned int pr = triangles[a];
     unsigned int pl = triangles[al];
     unsigned int p1 = triangles[bl];
-
-    // Verificamos si p1, el nuevo punto, esta en el circulo circunscrito del triangulo que ya existia
-    bool illegal = inCircle({points[p0].x,points[p0].y}, {points[pr].x,points[pr].y}, {points[pl].x,points[pl].y}, {points[p1].x,points[p1].y});
-
-    if(illegal){
-      // Se hace el flip
+    
+    bool illegal = in_circle(
+      points[p0].x, points[p0].z,
+      points[pr].x, points[pr].z,
+      points[pl].x, points[pl].z,
+      points[p1].x, points[p1].z);
+    
+    if (illegal) {
       triangles[a] = p1;
       triangles[b] = p0;
-
-      auto hbl = halfEdges[bl];
-
-      if(hbl == INVALID){
-        unsigned int e = hullStart;
+      
+      unsigned int hbl = halfedges[bl];
+      
+      if (hbl == INVALID) {
+        unsigned int e = hull_start;
         do {
-          if(hullTri[e] == bl){
-            hullTri[e] = a; 
+          if (hull_tri[e] == bl) {
+            hull_tri[e] = a;
             break;
           }
-          e = hullNext[e];
-        } while(e != hullStart);
+          e = hull_next[e];
+        } while (e != hull_start);
       }
-
-      // Actualizar punteros de halfEdges
+      
       link(a, hbl);
-      link(b, halfEdges[ar]);
+      link(b, halfedges[ar]);
       link(ar, bl);
-
-      // Añadimos las nuevas aristas para comprobar iterativamente
+      
       unsigned int br = b0 + (b + 1) % 3;
-
-      if(i < illegalEdgesStack.size()){
-        illegalEdgesStack[i] = br;
+      
+      if (i < m_edge_stack.size()) {
+        m_edge_stack[i] = br;
       } else {
-        illegalEdgesStack.push_back(br);
+        m_edge_stack.push_back(br);
       }
       i++;
     } else {
-      // Si la arista es legal, desapilar y continuar
-      if(i > 0){
+      if (i > 0) {
         i--;
-        a = illegalEdgesStack[i];
+        a = m_edge_stack[i];
         continue;
       } else {
         break;
       }
     }
   }
+  
   return ar;
 }
 
-unsigned int Delaunay::hashKey(Point p) const {
-
-  // Calcular el vector relativo al circuncentro del triángulo inicial
-  Point aux = p - circumCenterPoint;
-  double angle = pseudoAngle(aux);
-  
-  // Escalar el pseudo-ángulo por hashSize para obtener la clave
-  unsigned int key = static_cast<unsigned int>(std::llround(std::floor(angle * static_cast<double>(hashSize))));
-  return fast_mod(key, hashSize);
+unsigned int Delaunay::hash_key(double x, double y) const {
+  double dx = x - m_center_x;
+  double dy = y - m_center_y;
+  double angle = pseudo_angle(dx, dy);
+  unsigned int key = static_cast<unsigned int>(floor(angle * m_hash_size));
+  return fast_mod(key, m_hash_size);
 }
 
-unsigned int Delaunay::addTriangle(unsigned int i0, unsigned int i1, unsigned int i2, unsigned int a, unsigned int b, unsigned int c){
+unsigned int Delaunay::add_triangle(unsigned int i0, unsigned int i1, unsigned int i2,
+                                   unsigned int a, unsigned int b, unsigned int c) {
   unsigned int t = triangles.size();
-
-  // Añadir los índices de los 3 vértices
   triangles.push_back(i0);
   triangles.push_back(i1);
   triangles.push_back(i2);
-
-  // Enlazar las media-aristas con sus vecinos
+  
   link(t, a);
   link(t + 1, b);
   link(t + 2, c);
-
+  
   return t;
 }
 
-void Delaunay::link(const unsigned int a, const unsigned int b){
-  // Enlazar a -> b
-  unsigned int s = halfEdges.size();
-  if(a == s){
-    halfEdges.push_back(b);
-  } else if(a < s){
-    halfEdges[a] = b;
+void Delaunay::link(unsigned int a, unsigned int b) {
+  if (a == halfedges.size()) {
+    halfedges.push_back(b);
+  } else if (a < halfedges.size()) {
+    halfedges[a] = b;
   } else {
-    throw runtime_error("Union invalida: a fuera de rango");
+    throw runtime_error("link: a fuera de rango");
   }
-
-  // Si el vecino es válido, enlazar b -> a
-  if(b != INVALID){
-    unsigned int s2 = halfEdges.size();
-    if(b == s2){
-      halfEdges.push_back(a);
-    } else if (b < s2){
-      halfEdges[b] = a;
+  
+  if (b != INVALID) {
+    if (b == halfedges.size()) {
+      halfedges.push_back(a);
+    } else if (b < halfedges.size()) {
+      halfedges[b] = a;
     } else {
-      throw runtime_error("Union invalida: b fuera de rango");
+      throw runtime_error("link: b fuera de rango");
     }
   }
 }

@@ -39,7 +39,7 @@ class Renderer{
         glBindVertexArray(0);
     }
 
-    void drawTriangles(unsigned int shaderProgram, const glm::mat4 mvp, const glm::mat4& model, const glm::vec3& color){
+    void drawTriangles(unsigned int shaderProgram, const glm::mat4 mvp, const glm::mat4& model, const glm::vec3& color, unsigned int drawCount){
         int mvpLocation = glGetUniformLocation(shaderProgram, "u_MVP"); 
         int modelLocation = glGetUniformLocation(shaderProgram, "u_Model"); 
         int colorLocation = glGetUniformLocation(shaderProgram, "u_ObjectColor"); 
@@ -49,8 +49,7 @@ class Renderer{
         glUniform3fv(colorLocation, 1, glm::value_ptr(color));
 
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
-				glDrawArrays(GL_POINTS, 0, indexCount);
+        glDrawElements(GL_TRIANGLES, drawCount, GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
     }
 
