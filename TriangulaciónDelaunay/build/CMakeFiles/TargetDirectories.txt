@@ -1,0 +1,3 @@
+C:/Users/jrodr/Documents/Geometria-Computacional/TriangulaciónDelaunay/build/CMakeFiles/Mallado.dir
+C:/Users/jrodr/Documents/Geometria-Computacional/TriangulaciónDelaunay/build/CMakeFiles/edit_cache.dir
+C:/Users/jrodr/Documents/Geometria-Computacional/TriangulaciónDelaunay/build/CMakeFiles/rebuild_cache.dir

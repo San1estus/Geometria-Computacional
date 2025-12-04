@@ -5,7 +5,7 @@ out vec4 color;
 
 uniform vec3 u_LightPos;  // Posición de la fuente de luz
 uniform vec3 u_ViewPos;   // Posición de la cámara
-uniform vec3 u_ObjectColor; // Color base de la esfera
+uniform vec3 u_ObjectColor; // Color base de los triangulos
 
 void main()
 {

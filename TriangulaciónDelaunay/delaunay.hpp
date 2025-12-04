@@ -10,7 +10,7 @@
 #include <limits>
 #include <stdexcept>
 
-#define INVALID std::numeric_limits<size_t>::max()
+#define INVALID std::numeric_limits<unsigned int>::max()
 
 using namespace std;
 struct Point3{
@@ -74,9 +74,9 @@ struct compare {
   vector<Point3> const& points;
   Point center;
 
-  bool operator()(size_t i, size_t j){
-		Point p1 = {points[i].x, points[i].y};
-		Point p2 = {points[j].x, points[j].y};
+  bool operator()(unsigned int i, unsigned int j){
+		Point p1 = {points[i].x, points[i].z};
+		Point p2 = {points[j].x, points[j].z};
     double d1 = dist(p1, center);
     double d2 = dist(p2, center);
     double diffDist = d1 - d2;
@@ -101,50 +101,50 @@ double pseudoAngle(Point p){
   return (p.y > 0.0 ? 3.0 - aux : 1.0 + aux) / 4.0;
 }
 
-size_t fast_mod(const size_t i, const size_t j){
+unsigned int fast_mod(const unsigned int i, const unsigned int j){
   return i >= j ? i % j : i; 
 }
 
 class Delaunay {
 public:
   vector<Point3> const& points;
-  vector<size_t> triangles;
-  vector<size_t> halfEdges;
-  vector<size_t> hullPrev;
-  vector<size_t> hullNext;
-  vector<size_t> hullTri;
-  size_t hullStart;
+  vector<unsigned int> triangles;
+  vector<unsigned int> halfEdges;
+  vector<unsigned int> hullPrev;
+  vector<unsigned int> hullNext;
+  vector<unsigned int> hullTri;
+  unsigned int hullStart;
 
   Delaunay(vector<Point3> const& input);
   double getHullArea();
 
 private:
-  vector<size_t> hullHash;
+  vector<unsigned int> hullHash;
   Point circumCenterPoint;
-  size_t hashSize;
-  vector<size_t> illegalEdgesStack;
+  unsigned int hashSize;
+  vector<unsigned int> illegalEdgesStack;
 
-  size_t legalize(size_t a);
-  size_t hashKey(Point p) const;
-  size_t addTriangle(size_t i0, size_t i1, size_t i2, size_t a, size_t b, size_t c);
-  void link(size_t a, size_t b);
+  unsigned int legalize(unsigned int a);
+  unsigned int hashKey(Point p) const;
+  unsigned int addTriangle(unsigned int i0, unsigned int i1, unsigned int i2, unsigned int a, unsigned int b, unsigned int c);
+  void link(unsigned int a, unsigned int b);
 };
 
 Delaunay::Delaunay(vector<Point3> const& input) : points(input) {
-  size_t n = points.size();
+  unsigned int n = points.size();
   if(n < 3) return;
 
-  vector<size_t> ids;
+  vector<unsigned int> ids;
   ids.reserve(n);
   Point maxPoint(numeric_limits<double>::min(), numeric_limits<double>::min());
   Point minPoint(numeric_limits<double>::max(), numeric_limits<double>::max());
 
   // Encontrar la Bounding Box
-  for(size_t i = 0; i < n; i++){
+  for(unsigned int i = 0; i < n; i++){
     if(points[i].x < minPoint.x) minPoint.x = points[i].x;
-    if(points[i].y < minPoint.y) minPoint.y = points[i].y;
+    if(points[i].z < minPoint.y) minPoint.y = points[i].z;
     if(points[i].x > maxPoint.x) maxPoint.x = points[i].x;
-    if(points[i].y > maxPoint.y) maxPoint.y = points[i].y;
+    if(points[i].z > maxPoint.y) maxPoint.y = points[i].z;
     ids.push_back(i);
   }
 
@@ -152,11 +152,11 @@ Delaunay::Delaunay(vector<Point3> const& input) : points(input) {
   Point centroid((minPoint + maxPoint) / 2.0);
   
   // Selección del triángulo inicial
-  size_t i0 = INVALID;
+  unsigned int i0 = INVALID;
   double minDist = numeric_limits<double>::max();
   // i0: punto más cercano al centroide
-  for(size_t i = 0; i < n; i++){
-		Point p = {points[i].x, points[i].y};
+  for(unsigned int i = 0; i < n; i++){
+		Point p = {points[i].x, points[i].z};
     double d = dist(centroid, p);
     if(d < minDist){
       i0 = i;
@@ -166,12 +166,12 @@ Delaunay::Delaunay(vector<Point3> const& input) : points(input) {
 
   Point p0 = {points[i0].x, points[i0].y};
 
-  size_t i1 = INVALID;
+  unsigned int i1 = INVALID;
   minDist = numeric_limits<double>::max();
   // i1: punto más cercano a i0
-  for(size_t i = 0; i < n; i++){
+  for(unsigned int i = 0; i < n; i++){
     if(i == i0) continue;
-		Point p = {points[i].x, points[i].y};
+		Point p = {points[i].x, points[i].z};
     double d = dist(p0, p);
     if(d < minDist){
       i1 = i;
@@ -180,12 +180,12 @@ Delaunay::Delaunay(vector<Point3> const& input) : points(input) {
   }
   Point p1 = {points[i1].x, points[i1].y};
 
-  size_t i2 = INVALID;
+  unsigned int i2 = INVALID;
   double minRadius = numeric_limits<double>::max();
   // i2 es el punto que forma el circuncírculo más pequeño con p0 y p1
-  for(size_t i = 0; i < n; i++){
+  for(unsigned int i = 0; i < n; i++){
     if(i == i0 || i == i1) continue;
-		Point p = {points[i].x, points[i].y};
+		Point p = {points[i].x, points[i].z};
     double r = circumRadius(p0, p1, p);
     if(r < minRadius){
       i2 = i;
@@ -207,7 +207,7 @@ Delaunay::Delaunay(vector<Point3> const& input) : points(input) {
   sort(ids.begin(), ids.end(), compare{points, circumCenterPoint});
 
   // Inicializar estructuras del Convex Hull
-  hashSize = static_cast<size_t>(llround(ceil(sqrt(n))));
+  hashSize = static_cast<unsigned int>(llround(ceil(sqrt(n))));
   hullHash.resize(hashSize);
   fill(hullHash.begin(), hullHash.end(), INVALID);
 
@@ -232,7 +232,7 @@ Delaunay::Delaunay(vector<Point3> const& input) : points(input) {
   hullHash[hashKey({points[i1].x, points[i1].y})] = i1;
   hullHash[hashKey({points[i2].x, points[i2].y})] = i2;
 
-  size_t maxTriangles = 2 * n - 5;
+  unsigned int maxTriangles = 2 * n - 5;
   triangles.reserve(maxTriangles * 3);
   halfEdges.reserve(maxTriangles * 3);
   addTriangle(i0, i1, i2, INVALID, INVALID, INVALID);
@@ -240,9 +240,9 @@ Delaunay::Delaunay(vector<Point3> const& input) : points(input) {
   Point temp(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN());
 
   // Bucle principal de inserción incremental
-  for(size_t k = 0; k < n; k++){
-    size_t i = ids[k];
-    Point p = {points[i].x, points[i].y};
+  for(unsigned int k = 0; k < n; k++){
+    unsigned int i = ids[k];
+    Point p = {points[i].x, points[i].z};
 
     // Saltar puntos cercanos y el triangulo inicial
     if(k > 0 && abs(p.x - temp.x) <= numeric_limits<double>::epsilon() && abs(p.y - temp.y) <= numeric_limits<double>::epsilon()) continue;
@@ -251,19 +251,19 @@ Delaunay::Delaunay(vector<Point3> const& input) : points(input) {
     if(i == i0 || i == i1 || i == i2) continue;
 
     // Localización del borde visible usando hash table y walking search
-    size_t start = 0;
-    size_t key = hashKey(p);
-    for(size_t j = 0; j < hashSize; j++){
+    unsigned int start = 0;
+    unsigned int key = hashKey(p);
+    for(unsigned int j = 0; j < hashSize; j++){
       start = hullHash[fast_mod(key + j, hashSize)];
       if(start != INVALID && start != hullNext[start]) break;
     }
 
     start = hullPrev[start];
-    size_t e = start;
-    size_t q;
+    unsigned int e = start;
+    unsigned int q;
 
     // Caminar hacia adelante hasta encontrar un borde
-    while(q = hullNext[e], (orientation(p, {points[e].x, points[e].y}, {points[q].x, points[q].y}) != LEFT)){
+    while(q = hullNext[e], (orientation(p, {points[e].x, points[e].z}, {points[q].x, points[q].z}) != LEFT)){
       e = q;
       if(e == start){
         e = INVALID; // Punto interior o duplicado
@@ -275,13 +275,13 @@ Delaunay::Delaunay(vector<Point3> const& input) : points(input) {
 
     // Inserción del nuevo punto 'p'
     // Añadir el primer triángulo (e, i, hullNext[e])
-    size_t t = addTriangle(e, i, hullNext[e], INVALID, INVALID, hullTri[e]);
+    unsigned int t = addTriangle(e, i, hullNext[e], INVALID, INVALID, hullTri[e]);
     hullTri[i] = legalize(t + 2);
     hullTri[e] = t;
     
-    size_t next = hullNext[e];
+    unsigned int next = hullNext[e];
     // Caminar hacia adelante: añadir nuevos triángulos y legalizar
-    while (q = hullNext[next], orientation(p, {points[next].x, points[next].y}, {points[q].x, points[q].y}) == LEFT){
+    while (q = hullNext[next], orientation(p, {points[next].x, points[next].z}, {points[q].x, points[q].z}) == LEFT){
       // Conexión crítica: se conecta con el triángulo vecino 'hullTri[next]'
       t = addTriangle(next, i, q, hullTri[i], INVALID, hullTri[next]);
       hullTri[i] = legalize(t + 2);
@@ -291,7 +291,7 @@ Delaunay::Delaunay(vector<Point3> const& input) : points(input) {
 
     // Caminar hacia atrás: añadir nuevos triángulos y legalizar
     if(e == start){
-      while(q = hullPrev[e], orientation(p, {points[q].x, points[q].y}, {points[e].x, points[e].y}) == LEFT){
+      while(q = hullPrev[e], orientation(p, {points[q].x, points[q].z}, {points[e].x, points[e].z}) == LEFT){
         t = addTriangle(q, i, e, INVALID, hullTri[e], hullTri[q]);
         legalize(t + 2);
         hullTri[q] = t;
@@ -308,15 +308,15 @@ Delaunay::Delaunay(vector<Point3> const& input) : points(input) {
     hullNext[i] = next;
 
     hullHash[hashKey(p)] = i;
-    hullHash[hashKey({points[e].x, points[e].y})] = e;
+    hullHash[hashKey({points[e].x, points[e].z})] = e;
   }
 }
 
 double Delaunay::getHullArea(){
   vector<double> hullArea;
-  size_t e = hullStart;
+  unsigned int e = hullStart;
   do {
-    hullArea.push_back((points[e].x - points[hullPrev[e]].x) * (points[e].y + points[hullPrev[e]].y));
+    hullArea.push_back((points[e].x - points[hullPrev[e]].x) * (points[e].z + points[hullPrev[e]].y));
     e = hullNext[e]; 
   } while(e != hullStart);
   
@@ -326,15 +326,15 @@ double Delaunay::getHullArea(){
 }
 
 // Legalización de aristas
-size_t Delaunay::legalize(size_t a){
-  size_t i = 0;
-  size_t ar = 0;
+unsigned int Delaunay::legalize(unsigned int a){
+  unsigned int i = 0;
+  unsigned int ar = 0;
   illegalEdgesStack.clear();
 
   while(true){
-    size_t b = halfEdges[a];
+    unsigned int b = halfEdges[a];
 
-    size_t a0 = 3 * (a / 3);
+    unsigned int a0 = 3 * (a / 3);
     ar = a0 + (a + 2) % 3;
 
     if(b == INVALID){
@@ -347,14 +347,14 @@ size_t Delaunay::legalize(size_t a){
       }
     }
 
-    size_t b0 = 3 * (b / 3);
-    size_t al = a0 + (a + 1) % 3;
-    size_t bl = b0 + (b + 2) % 3;
+    unsigned int b0 = 3 * (b / 3);
+    unsigned int al = a0 + (a + 1) % 3;
+    unsigned int bl = b0 + (b + 2) % 3;
 
-    size_t p0 = triangles[ar];
-    size_t pr = triangles[a];
-    size_t pl = triangles[al];
-    size_t p1 = triangles[bl];
+    unsigned int p0 = triangles[ar];
+    unsigned int pr = triangles[a];
+    unsigned int pl = triangles[al];
+    unsigned int p1 = triangles[bl];
 
     // Verificamos si p1, el nuevo punto, esta en el circulo circunscrito del triangulo que ya existia
     bool illegal = inCircle({points[p0].x,points[p0].y}, {points[pr].x,points[pr].y}, {points[pl].x,points[pl].y}, {points[p1].x,points[p1].y});
@@ -367,7 +367,7 @@ size_t Delaunay::legalize(size_t a){
       auto hbl = halfEdges[bl];
 
       if(hbl == INVALID){
-        size_t e = hullStart;
+        unsigned int e = hullStart;
         do {
           if(hullTri[e] == bl){
             hullTri[e] = a; 
@@ -383,7 +383,7 @@ size_t Delaunay::legalize(size_t a){
       link(ar, bl);
 
       // Añadimos las nuevas aristas para comprobar iterativamente
-      size_t br = b0 + (b + 1) % 3;
+      unsigned int br = b0 + (b + 1) % 3;
 
       if(i < illegalEdgesStack.size()){
         illegalEdgesStack[i] = br;
@@ -405,19 +405,19 @@ size_t Delaunay::legalize(size_t a){
   return ar;
 }
 
-size_t Delaunay::hashKey(Point p) const {
+unsigned int Delaunay::hashKey(Point p) const {
 
   // Calcular el vector relativo al circuncentro del triángulo inicial
   Point aux = p - circumCenterPoint;
   double angle = pseudoAngle(aux);
   
   // Escalar el pseudo-ángulo por hashSize para obtener la clave
-  size_t key = static_cast<size_t>(std::llround(std::floor(angle * static_cast<double>(hashSize))));
+  unsigned int key = static_cast<unsigned int>(std::llround(std::floor(angle * static_cast<double>(hashSize))));
   return fast_mod(key, hashSize);
 }
 
-size_t Delaunay::addTriangle(size_t i0, size_t i1, size_t i2, size_t a, size_t b, size_t c){
-  size_t t = triangles.size();
+unsigned int Delaunay::addTriangle(unsigned int i0, unsigned int i1, unsigned int i2, unsigned int a, unsigned int b, unsigned int c){
+  unsigned int t = triangles.size();
 
   // Añadir los índices de los 3 vértices
   triangles.push_back(i0);
@@ -432,9 +432,9 @@ size_t Delaunay::addTriangle(size_t i0, size_t i1, size_t i2, size_t a, size_t b
   return t;
 }
 
-void Delaunay::link(const size_t a, const size_t b){
+void Delaunay::link(const unsigned int a, const unsigned int b){
   // Enlazar a -> b
-  size_t s = halfEdges.size();
+  unsigned int s = halfEdges.size();
   if(a == s){
     halfEdges.push_back(b);
   } else if(a < s){
@@ -445,7 +445,7 @@ void Delaunay::link(const size_t a, const size_t b){
 
   // Si el vecino es válido, enlazar b -> a
   if(b != INVALID){
-    size_t s2 = halfEdges.size();
+    unsigned int s2 = halfEdges.size();
     if(b == s2){
       halfEdges.push_back(a);
     } else if (b < s2){
