@@ -160,7 +160,7 @@ vector<float> Point3ToVertices(const vector<Point3> &points){
 }
 
 int main(){
-	vector<Point3> points = readInput("input2.txt");
+	vector<Point3> points = readInput("input4.txt");
 	Delaunay d(points);
 
 	unsigned int totalIndices = d.triangles.size();

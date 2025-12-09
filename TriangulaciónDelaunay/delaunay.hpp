@@ -128,10 +128,10 @@ public:
   double getHullArea();                
   
 private:
-  vector<unsigned int> m_hash;         
-  double m_center_x, m_center_y;       
-  unsigned int m_hash_size;            
-  vector<unsigned int> m_edge_stack;
+  vector<unsigned int> hashTable;         
+  double circumCenter_x, circumCenter_y;       
+  unsigned int hashTableSize;            
+  vector<unsigned int> illegalEdgeStack;
   
   unsigned int legalize(unsigned int a);                           
   unsigned int hashKey(double x, double y) const;                  
@@ -245,15 +245,15 @@ Delaunay::Delaunay(const vector<Point3>& input) : points(input), hull_start(0) {
   double cl = ex * ex + ey * ey;
   double d = dx * ey - dy * ex;
   
-  m_center_x = i0x + (ey * bl - dy * cl) * 0.5 / d;
-  m_center_y = i0y + (dx * cl - ex * bl) * 0.5 / d;
+  circumCenter_x = i0x + (ey * bl - dy * cl) * 0.5 / d;
+  circumCenter_y = i0y + (dx * cl - ex * bl) * 0.5 / d;
   
   // Ordenar puntos por distancia radial al centro
-  sort(ids.begin(), ids.end(), compare(points, m_center_x, m_center_y));
+  sort(ids.begin(), ids.end(), compare(points, circumCenter_x, circumCenter_y));
   
   // Inicializar estructuras de datos
-  m_hash_size = static_cast<unsigned int>(ceil(sqrt(n)));
-  m_hash.resize(m_hash_size, INVALID);
+  hashTableSize = static_cast<unsigned int>(ceil(sqrt(n)));
+  hashTable.resize(hashTableSize, INVALID);
   
   hull_prev.resize(n, INVALID);
   hull_next.resize(n, INVALID);
@@ -276,9 +276,9 @@ Delaunay::Delaunay(const vector<Point3>& input) : points(input), hull_start(0) {
   hull_tri[i2] = 2;
   
   // Inicializar tabla hash con vértices del triángulo inicial
-  m_hash[hashKey(i0x, i0y)] = i0;
-  m_hash[hashKey(i1x, i1y)] = i1;
-  m_hash[hashKey(i2x, i2y)] = i2;
+  hashTable[hashKey(i0x, i0y)] = i0;
+  hashTable[hashKey(i1x, i1y)] = i1;
+  hashTable[hashKey(i2x, i2y)] = i2;
   
   // Reservar memoria para triángulos
   unsigned int max_triangles = n < 3 ? 1 : 2 * n - 5;
@@ -313,8 +313,8 @@ Delaunay::Delaunay(const vector<Point3>& input) : points(input), hull_start(0) {
     unsigned int key = hashKey(x, y);
     
     // Sondeo lineal para manejar colisiones
-    for (unsigned int j = 0; j < m_hash_size; j++) {
-      start = m_hash[fast_mod(key + j, m_hash_size)];
+    for (unsigned int j = 0; j < hashTableSize; j++) {
+      start = hashTable[fast_mod(key + j, hashTableSize)];
       if (start != INVALID && start != hull_next[start]) break;
     }
     
@@ -337,10 +337,10 @@ Delaunay::Delaunay(const vector<Point3>& input) : points(input), hull_start(0) {
     
     if (e == INVALID) continue;  
     
-    // Crear primer triángulo conectando P a la arista visible (
+    // Crear primer triángulo conectando P a la arista visible
     unsigned int t = addTriangle(e, i, hull_next[e], INVALID, INVALID, hull_tri[e]);
     
-    // Legalizar la nueva arista p-q y actualizar referencias
+    // Legalizar la nueva arista p-q
     hull_tri[i] = legalize(t + 2);  
     hull_tri[e] = t; 
     
@@ -348,7 +348,6 @@ Delaunay::Delaunay(const vector<Point3>& input) : points(input), hull_start(0) {
     unsigned int next = hull_next[e];
     while (true) {
       q = hull_next[next];
-      // ¿Siguiente vértice también visible desde P?
       if (!orient(x, y, points[next].x, points[next].z, points[q].x, points[q].z)) {
         break; 
       }
@@ -363,7 +362,6 @@ Delaunay::Delaunay(const vector<Point3>& input) : points(input), hull_start(0) {
     if (e == start) {
       while (true) {
         q = hull_prev[e];
-        // ¿Vértice anterior también visible desde P?
         if (!orient(x, y, points[q].x, points[q].z, points[e].x, points[e].z)) {
           break;
         }
@@ -383,9 +381,9 @@ Delaunay::Delaunay(const vector<Point3>& input) : points(input), hull_start(0) {
     hull_next[e] = i;
     hull_next[i] = next;
     
-    // Actualizar tabla hash con nuevos vértices del casco
-    m_hash[hashKey(x, y)] = i;
-    m_hash[hashKey(points[e].x, points[e].z)] = e;
+    // Actualizar tabla hash con nuevos vértices dla envolvente
+    hashTable[hashKey(x, y)] = i;
+    hashTable[hashKey(points[e].x, points[e].z)] = e;
   }
 }
 
@@ -408,7 +406,7 @@ double Delaunay::getHullArea() {
 unsigned int Delaunay::legalize(unsigned int a) {
   unsigned int i = 0;           
   unsigned int ar = 0;
-  m_edge_stack.clear();
+  illegalEdgeStack.clear();
   
   while (true) {
     unsigned int b = halfedges[a]; 
@@ -421,7 +419,7 @@ unsigned int Delaunay::legalize(unsigned int a) {
     if (b == INVALID) {
       if (i > 0) {
         i--;
-        a = m_edge_stack[i];
+        a = illegalEdgeStack[i];
         continue;
       } else {
         break;
@@ -453,7 +451,7 @@ unsigned int Delaunay::legalize(unsigned int a) {
       // Actualizar referencias de aristas
       unsigned int hbl = halfedges[bl];
       
-      // Si bl estaba en el casco, actualizar su triángulo incidente
+      // Si bl estaba en la envolvente, actualizar su triángulo incidente
       if (hbl == INVALID) {
         unsigned int e = hull_start;
         do {
@@ -473,16 +471,16 @@ unsigned int Delaunay::legalize(unsigned int a) {
       // Apilar nueva arista para verificar recursivamente
       unsigned int br = b0 + (b + 1) % 3;
       
-      if (i < m_edge_stack.size()) {
-        m_edge_stack[i] = br;
+      if (i < illegalEdgeStack.size()) {
+        illegalEdgeStack[i] = br;
       } else {
-        m_edge_stack.push_back(br);
+        illegalEdgeStack.push_back(br);
       }
       i++;
     } else {
       if (i > 0) {
         i--;
-        a = m_edge_stack[i];
+        a = illegalEdgeStack[i];
         continue;
       } else {
         break;
@@ -495,11 +493,11 @@ unsigned int Delaunay::legalize(unsigned int a) {
 
 // Calcula hash basada en pseudo-ángulo 
 unsigned int Delaunay::hashKey(double x, double y) const {
-  double dx = x - m_center_x;
-  double dy = y - m_center_y;
+  double dx = x - circumCenter_x;
+  double dy = y - circumCenter_y;
   double angle = pseudo_angle(dx, dy);
-  unsigned int key = static_cast<unsigned int>(floor(angle * m_hash_size));
-  return fast_mod(key, m_hash_size);
+  unsigned int key = static_cast<unsigned int>(floor(angle * hashTableSize));
+  return fast_mod(key, hashTableSize);
 }
 
 unsigned int Delaunay::addTriangle(unsigned int i0, unsigned int i1, unsigned int i2, unsigned int a, unsigned int b, unsigned int c) {
